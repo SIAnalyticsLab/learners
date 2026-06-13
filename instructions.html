@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="SI Analytics">
+
+<title>Week 3 Workshop Assignment: Data Subsetting with dplyr</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="instructions_files/libs/clipboard/clipboard.min.js"></script>
+<script src="instructions_files/libs/quarto-html/quarto.js"></script>
+<script src="instructions_files/libs/quarto-html/popper.min.js"></script>
+<script src="instructions_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="instructions_files/libs/quarto-html/anchor.min.js"></script>
+<link href="instructions_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="instructions_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="instructions_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="instructions_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="instructions_files/libs/bootstrap/bootstrap-a1ff8711b79ae3724c050874b28d9907.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+<link rel="stylesheet" href="si-analytics.css">
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a>
+  <ul class="collapse">
+  <li><a href="#project-folder-structure" id="toc-project-folder-structure" class="nav-link" data-scroll-target="#project-folder-structure">Project Folder Structure</a>
+  <ul class="collapse">
+  <li><a href="#step-1-create-a-project-folder" id="toc-step-1-create-a-project-folder" class="nav-link" data-scroll-target="#step-1-create-a-project-folder">Step 1: Create a Project Folder</a></li>
+  <li><a href="#step-2-create-an-rstudio-project" id="toc-step-2-create-an-rstudio-project" class="nav-link" data-scroll-target="#step-2-create-an-rstudio-project">Step 2: Create an RStudio Project</a></li>
+  <li><a href="#step-3-create-the-required-subfolders" id="toc-step-3-create-the-required-subfolders" class="nav-link" data-scroll-target="#step-3-create-the-required-subfolders">Step 3: Create the Required Subfolders</a></li>
+  <li><a href="#step-4-create-your-r-script" id="toc-step-4-create-your-r-script" class="nav-link" data-scroll-target="#step-4-create-your-r-script">Step 4: Create Your R Script</a></li>
+  <li><a href="#step-5-download-the-dataset" id="toc-step-5-download-the-dataset" class="nav-link" data-scroll-target="#step-5-download-the-dataset">Step 5: Download the Dataset</a></li>
+  <li><a href="#final-folder-structure" id="toc-final-folder-structure" class="nav-link" data-scroll-target="#final-folder-structure">Final Folder Structure</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#load-required-packages" id="toc-load-required-packages" class="nav-link" data-scroll-target="#load-required-packages">Load Required Packages</a></li>
+  <li><a href="#get-the-data" id="toc-get-the-data" class="nav-link" data-scroll-target="#get-the-data">Get the Data</a></li>
+  <li><a href="#explore-the-dataset" id="toc-explore-the-dataset" class="nav-link" data-scroll-target="#explore-the-dataset">Explore the Dataset</a></li>
+  <li><a href="#about-the-dataset" id="toc-about-the-dataset" class="nav-link" data-scroll-target="#about-the-dataset">About the Dataset</a>
+  <ul class="collapse">
+  <li><a href="#remove-unnecessary-variables" id="toc-remove-unnecessary-variables" class="nav-link" data-scroll-target="#remove-unnecessary-variables">Remove Unnecessary Variables</a></li>
+  <li><a href="#task" id="toc-task" class="nav-link" data-scroll-target="#task">Task</a></li>
+  <li><a href="#example-syntax" id="toc-example-syntax" class="nav-link" data-scroll-target="#example-syntax">Example Syntax</a></li>
+  </ul></li>
+  <li><a href="#assignment-tasks" id="toc-assignment-tasks" class="nav-link" data-scroll-target="#assignment-tasks">Assignment Tasks</a>
+  <ul class="collapse">
+  <li><a href="#data-subset-1-extract-demographic-and-loan-information" id="toc-data-subset-1-extract-demographic-and-loan-information" class="nav-link" data-scroll-target="#data-subset-1-extract-demographic-and-loan-information">Data Subset 1: Extract demographic and loan information</a></li>
+  <li><a href="#data-subset-2-extract-credit-evaluation-variables" id="toc-data-subset-2-extract-credit-evaluation-variables" class="nav-link" data-scroll-target="#data-subset-2-extract-credit-evaluation-variables">Data Subset 2: Extract credit evaluation variables</a></li>
+  <li><a href="#data-subset-3-extract-high-income-borrowers" id="toc-data-subset-3-extract-high-income-borrowers" class="nav-link" data-scroll-target="#data-subset-3-extract-high-income-borrowers">Data Subset 3: Extract high-income borrowers</a></li>
+  <li><a href="#data-subset-4-extract-high-risk-loans" id="toc-data-subset-4-extract-high-risk-loans" class="nav-link" data-scroll-target="#data-subset-4-extract-high-risk-loans">Data Subset 4: Extract high-risk loans</a></li>
+  <li><a href="#data-subset-5-extract-prime-borrowers" id="toc-data-subset-5-extract-prime-borrowers" class="nav-link" data-scroll-target="#data-subset-5-extract-prime-borrowers">Data Subset 5: Extract “prime” borrowers</a></li>
+  </ul></li>
+  <li><a href="#optional-challenge-export-multiple-sheets-to-excel" id="toc-optional-challenge-export-multiple-sheets-to-excel" class="nav-link" data-scroll-target="#optional-challenge-export-multiple-sheets-to-excel">Optional Challenge: Export Multiple Sheets to Excel</a>
+  <ul class="collapse">
+  <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective">Objective</a></li>
+  </ul></li>
+  <li><a href="#install-and-load-writexl" id="toc-install-and-load-writexl" class="nav-link" data-scroll-target="#install-and-load-writexl">Install and Load <code>writexl</code></a></li>
+  <li><a href="#example-using-a-built-in-r-dataset" id="toc-example-using-a-built-in-r-dataset" class="nav-link" data-scroll-target="#example-using-a-built-in-r-dataset">Example Using a Built-In R Dataset</a>
+  <ul class="collapse">
+  <li><a href="#preview-the-dataset" id="toc-preview-the-dataset" class="nav-link" data-scroll-target="#preview-the-dataset">Preview the Dataset</a></li>
+  </ul></li>
+  <li><a href="#create-example-subsets" id="toc-create-example-subsets" class="nav-link" data-scroll-target="#create-example-subsets">Create Example Subsets</a></li>
+  <li><a href="#export-multiple-sheets-into-one-excel-workbook" id="toc-export-multiple-sheets-into-one-excel-workbook" class="nav-link" data-scroll-target="#export-multiple-sheets-into-one-excel-workbook">Export Multiple Sheets into One Excel Workbook</a></li>
+  <li><a href="#your-challenge" id="toc-your-challenge" class="nav-link" data-scroll-target="#your-challenge">Your Challenge</a>
+  <ul class="collapse">
+  <li><a href="#your-code" id="toc-your-code" class="nav-link" data-scroll-target="#your-code">Your Code</a></li>
+  </ul></li>
+  <li><a href="#submission-instructions" id="toc-submission-instructions" class="nav-link" data-scroll-target="#submission-instructions">Submission Instructions</a></li>
+  <li><a href="#final-reminder" id="toc-final-reminder" class="nav-link" data-scroll-target="#final-reminder">Final Reminder</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Week 3 Workshop Assignment: Data Subsetting with dplyr</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>SI Analytics </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>Welcome to the Week 3 workshop assignment for the <strong>Accelerated Data Analytics Bootcamp</strong> cohort.</p>
+<p>This week focuses on one of the most important foundations of practical data analysis:</p>
+<ul>
+<li>selecting relevant columns</li>
+<li>filtering rows</li>
+<li>creating analytical subsets</li>
+<li>preparing clean datasets for downstream analysis</li>
+</ul>
+<p>In real-world analytics work, analysts rarely work with an entire raw dataset exactly as received. Instead, they prepare focused extracts designed for specific analytical tasks, teams, or reporting needs.</p>
+<p>For this assignment, your responsibility is to prepare structured data subsets for <strong>someone else to use</strong>. This mirrors real-world analytical workflows where analysts prepare datasets for colleagues, reporting teams, model developers, dashboards, or decision-makers.</p>
+<p>This assignment is designed to strengthen your practical data wrangling muscle using:</p>
+<ul>
+<li><code>tidyverse</code></li>
+<li><code>dplyr</code></li>
+<li><code>readr</code></li>
+</ul>
+<p>You are encouraged to work carefully, read variable names closely, and consult the data dictionary whenever needed.</p>
+</section>
+<section id="learning-objectives" class="level1">
+<h1>Learning Objectives</h1>
+<p>By completing this assignment, you should be able to:</p>
+<ul>
+<li>Import CSV datasets into R</li>
+<li>Explore dataset structure</li>
+<li>Select columns using <code>select()</code></li>
+<li>Filter rows using <code>filter()</code></li>
+<li>Rename variables using <code>rename()</code></li>
+<li>Use helper functions such as <code>contains()</code></li>
+<li>Apply logical filtering conditions</li>
+<li>Export cleaned subsets to CSV files</li>
+<li>Organize analytical outputs systematically</li>
+</ul>
+</section>
+<section id="setup" class="level1">
+<h1>Setup</h1>
+<section id="project-folder-structure" class="level2">
+<h2 class="anchored" data-anchor-id="project-folder-structure">Project Folder Structure</h2>
+<p>Before you begin this workshop, please complete the following setup steps carefully.</p>
+<section id="step-1-create-a-project-folder" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-create-a-project-folder">Step 1: Create a Project Folder</h3>
+<p>Create a new folder named:</p>
+<pre class="text"><code>week_03_workshop</code></pre>
+</section>
+<section id="step-2-create-an-rstudio-project" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-create-an-rstudio-project">Step 2: Create an RStudio Project</h3>
+<p>Open RStudio and create a new project using the folder you just created.</p>
+<ol type="1">
+<li>Click <strong>File → New Project</strong></li>
+<li>Select <strong>Existing Directory</strong></li>
+<li>Browse to your <code>week_03_workshop</code> folder</li>
+<li>Click <strong>Create Project</strong></li>
+</ol>
+<p>This will ensure that all files, scripts, and data used in this workshop are stored in a single organized location.</p>
+</section>
+<section id="step-3-create-the-required-subfolders" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-create-the-required-subfolders">Step 3: Create the Required Subfolders</h3>
+<p>Inside your <code>week_03_workshop</code> project folder, create the following folders:</p>
+<ul>
+<li><code>data</code></li>
+<li><code>scripts</code></li>
+</ul>
+</section>
+<section id="step-4-create-your-r-script" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-create-your-r-script">Step 4: Create Your R Script</h3>
+<p>Inside the <code>scripts</code> folder, create a new R script named:</p>
+<pre class="text"><code>week_03_instructions.R</code></pre>
+</section>
+<section id="step-5-download-the-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="step-5-download-the-dataset">Step 5: Download the Dataset</h3>
+<p>Later in this workshop, you will be provided with instructions for obtaining the dataset:</p>
+<pre class="text"><code>loans_full_schema.csv</code></pre>
+<p>Once downloaded, save the file inside the <code>data</code> folder.</p>
+</section>
+<section id="final-folder-structure" class="level3">
+<h3 class="anchored" data-anchor-id="final-folder-structure">Final Folder Structure</h3>
+<p>By the time you are ready to begin the exercises, your project should be organized as follows:</p>
+<pre class="text"><code>week_03_workshop/
+│
+├── data/
+│   └── loans_full_schema.csv
+│
+├── scripts/
+│   └── week_03_instructions.R
+│</code></pre>
+<p>Maintaining a consistent project structure is an important data analytics best practice. It helps keep your work organized, improves reproducibility, and makes it easier to locate files as your projects become more complex.</p>
+</section>
+</section>
+</section>
+<section id="load-required-packages" class="level1">
+<h1>Load Required Packages</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Optional display settings:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">tibble.width =</span> <span class="cn">Inf</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="get-the-data" class="level1">
+<h1>Get the Data</h1>
+<p>Download the lending club dataset from GitHub here <a href="https://github.com/SIAnalyticsLab/pdav_q1-2026_materials/blob/main/week_05_workshop/data/loans_full_schema.csv">https://github.com/SIAnalyticsLab/pdav_q1-2026_materials/blob/main/week_05_workshop/data/loans_full_schema.csv</a> then place it in an appropriate place in <code>data</code> subfolder in your <code>week_03_workshop</code> folder.</p>
+<p>Below, load the data with the <code>read_csv()</code> function from the <code>readr</code> package.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>loans_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/loans_full_schema.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="explore-the-dataset" class="level1">
+<h1>Explore the Dataset</h1>
+<p>Before beginning any subsetting work, spend time understanding the structure of the dataset. View the dataset in RStudio with the data viewer, so you can understand what it contains. The dataset comes from Lending Club, a platform for peer-to-peer lending. Each row pertains to a specific loan made through the platform. You can find the data dictionary here: <a href="https://vincentarelbundock.github.io/Rdatasets/doc/openintro/loans_full_schema.html">https://vincentarelbundock.github.io/Rdatasets/doc/openintro/loans_full_schema.html</a>.</p>
+<p>You can preview the Data with <code>head(loans_data)</code>, view column names <code>head(loans_data)</code>, Examine Dataset Structure with <code>glimpse(loans_data)</code> or Open the Data Viewer <code>View(loans_data)</code>.</p>
+</section>
+<section id="about-the-dataset" class="level1">
+<h1>About the Dataset</h1>
+<p>The dataset comes from <strong>Lending Club</strong>, a peer-to-peer lending platform. Each row represents an individual loan issued through the platform. The dataset contains information related to:</p>
+<ul>
+<li>borrower demographics</li>
+<li>employment</li>
+<li>loan characteristics</li>
+<li>repayment history</li>
+<li>credit evaluation</li>
+<li>risk indicators</li>
+</ul>
+<section id="remove-unnecessary-variables" class="level2">
+<h2 class="anchored" data-anchor-id="remove-unnecessary-variables">Remove Unnecessary Variables</h2>
+<p>The dataset contains a variable called <code>rownames</code>. This variable is not analytically useful and should be removed before continuing.</p>
+</section>
+<section id="task" class="level2">
+<h2 class="anchored" data-anchor-id="task">Task</h2>
+<ul>
+<li>Remove the <code>rownames</code> column from the dataset.</li>
+<li>Create an <code>outputs</code> folder. You will export all analytical subsets into a dedicated <code>outputs</code> folder.</li>
+<li>Create the Folder <code>dir.create("outputs", showWarnings = FALSE)</code></li>
+<li>You will export each completed subset as a separate CSV file.</li>
+</ul>
+</section>
+<section id="example-syntax" class="level2">
+<h2 class="anchored" data-anchor-id="example-syntax">Example Syntax</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(dataframe_name, <span class="st">"outputs/file_name.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="assignment-tasks" class="level1">
+<h1>Assignment Tasks</h1>
+<section id="data-subset-1-extract-demographic-and-loan-information" class="level2">
+<h2 class="anchored" data-anchor-id="data-subset-1-extract-demographic-and-loan-information">Data Subset 1: Extract demographic and loan information</h2>
+<p>Create a subset containing the following demographic information (employment title, employment length, state, homeownership status) and loan details (loan amount, loan term, and interest rate). You may need to consult the data dictionary to identify which variables you need. Call your subset <code>demog_loan_info</code>.</p>
+<p>After creating the subset, rename the <code>term</code> column to <code>loan_term_months</code> to make it clear what the variable measures.</p>
+<p>Then, export the subset to a CSV file. <strong>Hint</strong> on helpful functions are <code>select()</code> and <code>rename()</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="data-subset-2-extract-credit-evaluation-variables" class="level2">
+<h2 class="anchored" data-anchor-id="data-subset-2-extract-credit-evaluation-variables">Data Subset 2: Extract credit evaluation variables</h2>
+<p>Create a subset containing all variables with the word <code>"credit"</code> in their variable names.Create a dataframe called <code>credit_vars</code>. Use <code>select()</code> together with <code>contains()</code></p>
+<p>Then, export the subset to a CSV file.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="data-subset-3-extract-high-income-borrowers" class="level2">
+<h2 class="anchored" data-anchor-id="data-subset-3-extract-high-income-borrowers">Data Subset 3: Extract high-income borrowers</h2>
+<p>Create a subset of only high-income borrowers (annual income &gt; $100,000). Call your subset <code>high_income</code>. For this task, you do <strong>not</strong> need to subset columns. You only need to filter rows.</p>
+<p>Then, export the subset to a CSV file.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that for this you do not have to subset any columns, as you did for the previous subsets.</p>
+</section>
+<section id="data-subset-4-extract-high-risk-loans" class="level2">
+<h2 class="anchored" data-anchor-id="data-subset-4-extract-high-risk-loans">Data Subset 4: Extract high-risk loans</h2>
+<p>Create a subset of high-risk loans, a loan is considered high-risk if <strong>ANY</strong> of the following conditions apply:</p>
+<ul>
+<li>interest rate is greater than 15%</li>
+<li>debt-to-income ratio is greater than 30</li>
+<li>borrower has had any delinquencies in the last 2 years</li>
+</ul>
+<p>Use the <strong>individual debt-to-income variable</strong>, not the joint debt-to-income variable. Call your subset <code>high_risk</code>. Then, export the subset to a CSV file.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="data-subset-5-extract-prime-borrowers" class="level2">
+<h2 class="anchored" data-anchor-id="data-subset-5-extract-prime-borrowers">Data Subset 5: Extract “prime” borrowers</h2>
+<p>Create a subset of prime borrowers, a borrower is considered prime if they meet <strong>ALL</strong> of the following conditions:</p>
+<ul>
+<li>Grade A or Grade B</li>
+<li>debt-to-income ratio less than 20</li>
+<li>no delinquencies in the last 2 years</li>
+</ul>
+<p>Call your subset <code>prime</code>. Then, export the subset to a CSV file.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="optional-challenge-export-multiple-sheets-to-excel" class="level1">
+<h1>Optional Challenge: Export Multiple Sheets to Excel</h1>
+<section id="objective" class="level2">
+<h2 class="anchored" data-anchor-id="objective">Objective</h2>
+<p>Export all your subsets into a single Excel workbook with multiple sheets.</p>
+<p>This is a common workflow in professional analytics and reporting environments.</p>
+</section>
+</section>
+<section id="install-and-load-writexl" class="level1">
+<h1>Install and Load <code>writexl</code></h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"writexl"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(writexl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="example-using-a-built-in-r-dataset" class="level1">
+<h1>Example Using a Built-In R Dataset</h1>
+<p>Instead of the Python <code>tips</code> dataset, we will use the built-in <code>mtcars</code> dataset available in R.</p>
+<section id="preview-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="preview-the-dataset">Preview the Dataset</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="create-example-subsets" class="level1">
+<h1>Create Example Subsets</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>automatic_cars <span class="ot">&lt;-</span> mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(am <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>manual_cars <span class="ot">&lt;-</span> mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(am <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>high_mpg <span class="ot">&lt;-</span> mtcars <span class="sc">%&gt;%</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(mpg <span class="sc">&gt;</span> <span class="dv">25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="export-multiple-sheets-into-one-excel-workbook" class="level1">
+<h1>Export Multiple Sheets into One Excel Workbook</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_xlsx</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Automatic Cars"</span> <span class="ot">=</span> automatic_cars,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Manual Cars"</span> <span class="ot">=</span> manual_cars,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"High MPG Cars"</span> <span class="ot">=</span> high_mpg</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">path =</span> <span class="st">"outputs/mtcars_subsets.xlsx"</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="your-challenge" class="level1">
+<h1>Your Challenge</h1>
+<p>Apply this same workflow to export:</p>
+<ul>
+<li><code>demog_loan_info</code></li>
+<li><code>credit_vars</code></li>
+<li><code>high_income</code></li>
+<li><code>high_risk</code></li>
+<li><code>prime</code></li>
+</ul>
+<p>into a single Excel workbook.</p>
+<section id="your-code" class="level2">
+<h2 class="anchored" data-anchor-id="your-code">Your Code</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="submission-instructions" class="level1">
+<h1>Submission Instructions</h1>
+<p>Submit only your R script with the completed code. The exports will be evaluated by reviewing your code, so you do not need to submit the data subsets.</p>
+</section>
+<section id="final-reminder" class="level1">
+<h1>Final Reminder</h1>
+<p>The goal of this assignment is not speed. The goal is to strengthen your analytical workflow and build confidence in manipulating real-world datasets. The learners who improve the fastest are usually those who:</p>
+<ul>
+<li>practice consistently</li>
+<li>experiment independently</li>
+<li>read errors carefully</li>
+<li>revisit workshop examples</li>
+<li>ask questions early</li>
+</ul>
+<p>Data wrangling is one of the most valuable skills in analytics. Continue building the muscle.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
