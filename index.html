@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="SI Analytics">
+
+<title>Data Manipulations in R</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap-a1ff8711b79ae3724c050874b28d9907.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-full">
+
+<main class="content column-page" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Data Manipulations in R</h1>
+<p class="subtitle lead">WebR practical: Selecting columns, filtering rows, mutating columns, and pivoting data</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>SI Analytics </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<style>
+:root {
+  --navy: #0F172A;
+  --navy-soft: #172554;
+  --teal: #0F766E;
+  --teal-dark: #115E59;
+  --teal-soft: #E6F5F3;
+  --gold: #FACC15;
+  --gold-soft: #FFF8CC;
+  --ink: #1E293B;
+  --muted: #64748B;
+  --page: #F4F7FA;
+  --card: #FFFFFF;
+  --border: #D9E2EC;
+  --good: #166534;
+  --good-bg: #ECFDF3;
+  --bad: #B91C1C;
+  --bad-bg: #FEF2F2;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+.quarto-title-block { display: none; }
+
+.page-shell {
+  width: min(960px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: 1.4rem 0 3.5rem;
+}
+
+.masthead {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--navy) 0%, #102A43 66%, var(--teal-dark) 100%);
+  color: #FFFFFF;
+  border-radius: 18px;
+  border-top: 6px solid var(--gold);
+  padding: 2rem 2.1rem;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.16);
+}
+
+.masthead::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -95px;
+  top: -110px;
+  border-radius: 50%;
+  border: 38px solid rgba(255,255,255,0.06);
+}
+
+.brand-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+}
+
+.brand-name {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.assessment-badge {
+  display: inline-block;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 999px;
+  color: #D9F4F1;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.masthead h1 {
+  color: #FFFFFF;
+  font-size: clamp(1.9rem, 4vw, 2.7rem);
+  line-height: 1.08;
+  font-weight: 800;
+  margin: 0;
+  max-width: 760px;
+}
+
+.masthead p {
+  max-width: 740px;
+  margin: 0.8rem 0 0;
+  color: #DCE7F2;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.panel, .topic-panel, .practice, .completion-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.panel {
+  padding: 1.3rem 1.45rem;
+  margin-bottom: 1rem;
+}
+
+.panel h2, .topic-panel h2, .completion-panel h2 {
+  color: var(--navy);
+  font-weight: 800;
+  margin-top: 0;
+}
+
+.panel h2 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 3px solid var(--gold);
+  padding-bottom: 0.55rem;
+}
+
+.panel p:last-child { margin-bottom: 0; }
+
+.outcomes-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.outcome-card {
+  background: #F8FAFC;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem;
+}
+
+.outcome-number {
+  color: var(--teal);
+  font-weight: 900;
+  font-size: 1.15rem;
+}
+
+.outcome-label {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-top: 0.25rem;
+}
+
+.instructions {
+  background: var(--gold-soft);
+  border-left: 5px solid var(--gold);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-top: 1rem;
+}
+
+.instructions strong { color: var(--navy); }
+
+.topic-panel {
+  margin: 1.5rem 0 0.9rem;
+  padding: 1.25rem 1.35rem;
+  border-left: 6px solid var(--teal);
+}
+
+.topic-panel h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.topic-panel p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.topic-kicker {
+  color: var(--teal);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.practice {
+  padding: 1.1rem 1.2rem;
+  margin: 0.9rem 0;
+  border-top: 4px solid var(--gold);
+  box-shadow: 0 7px 22px rgba(15, 23, 42, 0.05);
+}
+
+.practice-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.45rem;
+}
+
+.practice-title {
+  color: var(--teal);
+  font-weight: 900;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.topic-tag {
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.question-text {
+  font-size: 1rem;
+  line-height: 1.65;
+  font-weight: 650;
+  margin-bottom: 0.8rem;
+}
+
+.choice-set {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.8rem 0;
+}
+
+.choice-set label {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 0.78rem 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.choice-set label:hover {
+  border-color: #75BDB7;
+  background: #F0FAF8;
+  transform: translateY(-1px);
+}
+
+.choice-set input {
+  appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid #AABBCB;
+  border-radius: 50%;
+  margin-top: 0.15rem;
+  flex: 0 0 auto;
+}
+
+.choice-set input:checked {
+  border-color: var(--teal);
+  background:
+    radial-gradient(circle at center, #FFFFFF 0 34%, transparent 36%),
+    var(--teal);
+}
+
+.choice-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 6px;
+  background: #EAF0F5;
+  color: var(--navy);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.question-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.check-button, .reset-button {
+  background: var(--teal);
+  color: #FFFFFF;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.6rem 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.check-button:hover, .reset-button:hover { background: var(--teal-dark); }
+
+.reset-button {
+  background: var(--navy);
+}
+
+.question-status {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.practice-feedback {
+  display: none;
+  margin-top: 0.85rem;
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  line-height: 1.55;
+}
+
+.practice.is-correct .practice-feedback {
+  display: block;
+  background: var(--good-bg);
+  color: #174527;
+  border: 1px solid #A7D8B8;
+}
+
+.practice.is-incorrect .practice-feedback {
+  display: block;
+  background: var(--bad-bg);
+  color: #5B1D1D;
+  border: 1px solid #F0B5B5;
+}
+
+.practice label.correct-choice {
+  border-color: var(--good);
+  background: var(--good-bg);
+}
+
+.practice label.incorrect-choice {
+  border-color: var(--bad);
+  background: var(--bad-bg);
+}
+
+code {
+  background: rgba(15, 118, 110, 0.09);
+  border-radius: 5px;
+  padding: 0.08rem 0.32rem;
+  color: #123D3A;
+  white-space: normal;
+}
+
+.completion-panel {
+  margin-top: 1.7rem;
+  padding: 1.35rem 1.45rem;
+  border-top: 5px solid var(--gold);
+}
+
+.completion-panel h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.55rem;
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 14px;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), #14B8A6);
+  transition: width 0.25s ease;
+}
+
+.score-value {
+  color: var(--navy);
+  font-weight: 900;
+  min-width: 95px;
+  text-align: right;
+}
+
+.score-details {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.code-box {
+  display: none;
+  text-align: center;
+  background: linear-gradient(135deg, var(--navy), var(--teal-dark));
+  color: #FFFFFF;
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-top: 1rem;
+}
+
+.code-box .code-label {
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.code-box .code-value {
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  margin-top: 0.35rem;
+}
+
+.footer-note {
+  color: var(--muted);
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 760px) {
+  .page-shell { width: min(100% - 1rem, 960px); }
+  .masthead { padding: 1.45rem 1.25rem; border-radius: 14px; }
+  .brand-line { align-items: flex-start; flex-direction: column; }
+  .outcomes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .practice { padding: 1rem; }
+  .choice-set label { padding: 0.72rem; }
+}
+
+@media (max-width: 480px) {
+  .outcomes-grid { grid-template-columns: 1fr; }
+  .score-row { grid-template-columns: 1fr; }
+  .score-value { text-align: left; }
+}
+</style>
+<div class="page-shell">
+
+<header class="masthead">
+  <div class="brand-line">
+    <div class="brand-name">SI Analytics</div>
+    <div class="assessment-badge">Interactive knowledge assessment</div>
+  </div>
+  <div class="eyebrow">Data Manipulations in R</div>
+  <h1>Select, filter, mutate, and pivot with confidence</h1>
+  <p>This self-marking assessment evaluates your understanding of four essential data-wrangling capabilities used throughout practical analysis in R.</p>
+</header>
+
+<section class="panel">
+  <h2 class="anchored">Assessment overview</h2>
+  <p>The quiz contains <strong>20 multiple-choice questions</strong>. Each question has one correct answer. Select an option and use <strong>Check answer</strong> to receive immediate feedback.</p>
+
+  <div class="outcomes-grid">
+    <div class="outcome-card">
+      <div class="outcome-number">01</div>
+      <div class="outcome-label">Selecting and renaming columns</div>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-number">02</div>
+      <div class="outcome-label">Filtering rows</div>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-number">03</div>
+      <div class="outcome-label">Mutating columns</div>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-number">04</div>
+      <div class="outcome-label">Pivoting data</div>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <strong>Completion standard:</strong> Achieve at least 16 correct answers out of 20, equivalent to 80%, to reveal your completion code. You may revise an answer and check it again.
+  </div>
+</section>
+
+
+<section class="topic-panel">
+  <div class="topic-kicker">Module 1 of 4</div>
+  <h2 class="anchored">Topic 1: Selecting and Renaming Columns</h2>
+  <p>Assess your understanding of <code>select()</code>, helper functions, exclusion, reordering, and <code>rename()</code>.</p>
+</section>
+
+
+<div class="practice" data-answer="a">
+  <div class="practice-meta">
+    <span class="practice-title">Question 1</span>
+    <span class="topic-tag">Topic 1</span>
+  </div>
+  <p class="question-text">What is the primary purpose of <code>dplyr::select()</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p0" value="a"><span class="choice-letter">A</span><span>To keep or remove columns from a data frame</span></label><label><input type="radio" name="p0" value="b"><span class="choice-letter">B</span><span>To keep or remove rows from a data frame</span></label><label><input type="radio" name="p0" value="c"><span class="choice-letter">C</span><span>To create summary statistics</span></label><label><input type="radio" name="p0" value="d"><span class="choice-letter">D</span><span>To combine two data frames</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. select() is used to keep, remove, or reorder columns." data-incorrect="Not quite. select() works with columns, not rows or grouped summaries."></div>
+</div>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 2</span>
+    <span class="topic-tag">Topic 1</span>
+  </div>
+  <p class="question-text">Which code selects only the <code>age</code>, <code>sex</code>, and <code>weight_kg</code> columns?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p1" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% filter(age, sex, weight_kg)</code></span></label><label><input type="radio" name="p1" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% select(age, sex, weight_kg)</code></span></label><label><input type="radio" name="p1" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% mutate(age, sex, weight_kg)</code></span></label><label><input type="radio" name="p1" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% rename(age, sex, weight_kg)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Multiple columns can be selected by listing their names inside select()." data-incorrect="Not quite. Use select() and list the required column names separated by commas."></div>
+</div>
+
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 3</span>
+    <span class="topic-tag">Topic 1</span>
+  </div>
+  <p class="question-text">What does <code>yao %&gt;% select(!age)</code> do?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p2" value="a"><span class="choice-letter">A</span><span>Selects only the <code>age</code> column</span></label><label><input type="radio" name="p2" value="b"><span class="choice-letter">B</span><span>Deletes all rows with missing age</span></label><label><input type="radio" name="p2" value="c"><span class="choice-letter">C</span><span>Selects every column except <code>age</code></span></label><label><input type="radio" name="p2" value="d"><span class="choice-letter">D</span><span>Renames the <code>age</code> column</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. The exclamation mark negates the selection and excludes age." data-incorrect="Not quite. Inside select(), ! means exclude the specified column or selection."></div>
+</div>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 4</span>
+    <span class="topic-tag">Topic 1</span>
+  </div>
+  <p class="question-text">Which code moves all columns beginning with <code>is_</code> to the front while retaining the remaining columns?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p3" value="a"><span class="choice-letter">A</span><span><code>yaounde %&gt;% select(starts_with("is_"))</code></span></label><label><input type="radio" name="p3" value="b"><span class="choice-letter">B</span><span><code>yaounde %&gt;% select(starts_with("is_"), everything())</code></span></label><label><input type="radio" name="p3" value="c"><span class="choice-letter">C</span><span><code>yaounde %&gt;% select(contains("is_"))</code></span></label><label><input type="radio" name="p3" value="d"><span class="choice-letter">D</span><span><code>yaounde %&gt;% rename(starts_with("is_"))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. starts_with() selects the matching columns first, and everything() retains all remaining columns." data-incorrect="Not quite. The correct pattern combines starts_with() with everything() to preserve the other columns."></div>
+</div>
+
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 5</span>
+    <span class="topic-tag">Topic 1</span>
+  </div>
+  <p class="question-text">Which code correctly renames <code>age</code> as <code>patient_age</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p4" value="a"><span class="choice-letter">A</span><span><code>rename(age = patient_age)</code></span></label><label><input type="radio" name="p4" value="b"><span class="choice-letter">B</span><span><code>rename(age, patient_age)</code></span></label><label><input type="radio" name="p4" value="c"><span class="choice-letter">C</span><span><code>rename(patient_age = age)</code></span></label><label><input type="radio" name="p4" value="d"><span class="choice-letter">D</span><span><code>select(age == patient_age)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. In rename(), the syntax is new_name = old_name." data-incorrect="Not quite. Remember the rename() pattern: new_name = old_name."></div>
+</div>
+
+
+<section class="topic-panel">
+  <div class="topic-kicker">Module 2 of 4</div>
+  <h2 class="anchored">Topic 2: Filtering Rows</h2>
+  <p>Assess your understanding of <code>filter()</code>, relational operators, logical operators, <code>%in%</code>, negation, and missing values.</p>
+</section>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 6</span>
+    <span class="topic-tag">Topic 2</span>
+  </div>
+  <p class="question-text">Which operator should be used to test whether <code>sex</code> is equal to <code>"Male"</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p5" value="a"><span class="choice-letter">A</span><span><code>=</code></span></label><label><input type="radio" name="p5" value="b"><span class="choice-letter">B</span><span><code>==</code></span></label><label><input type="radio" name="p5" value="c"><span class="choice-letter">C</span><span><code>!=</code></span></label><label><input type="radio" name="p5" value="d"><span class="choice-letter">D</span><span><code>%in%</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. == tests equality, while = is generally used to assign function arguments." data-incorrect="Not quite. Use == when testing whether two values are equal."></div>
+</div>
+
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 7</span>
+    <span class="topic-tag">Topic 2</span>
+  </div>
+  <p class="question-text">Which code keeps only respondents younger than 18 years?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p6" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% select(age &lt; 18)</code></span></label><label><input type="radio" name="p6" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% filter(age &lt;= 18)</code></span></label><label><input type="radio" name="p6" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% filter(age &lt; 18)</code></span></label><label><input type="radio" name="p6" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% mutate(age &lt; 18)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. filter(age < 18) keeps only respondents whose age is below 18." data-incorrect="Not quite. Use filter() with the condition age < 18."></div>
+</div>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 8</span>
+    <span class="topic-tag">Topic 2</span>
+  </div>
+  <p class="question-text">Which code keeps respondents living in either Tsinga or Messa?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p7" value="a"><span class="choice-letter">A</span><span><code>filter(neighborhood == c("Tsinga", "Messa"))</code></span></label><label><input type="radio" name="p7" value="b"><span class="choice-letter">B</span><span><code>filter(neighborhood %in% c("Tsinga", "Messa"))</code></span></label><label><input type="radio" name="p7" value="c"><span class="choice-letter">C</span><span><code>filter(neighborhood &amp; c("Tsinga", "Messa"))</code></span></label><label><input type="radio" name="p7" value="d"><span class="choice-letter">D</span><span><code>select(neighborhood %in% c("Tsinga", "Messa"))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. %in% tests whether each neighborhood belongs to the specified set." data-incorrect="Not quite. Use %in% with c() when matching one variable against several permitted values."></div>
+</div>
+
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 9</span>
+    <span class="topic-tag">Topic 2</span>
+  </div>
+  <p class="question-text">What does the <code>&amp;</code> operator mean inside <code>filter()</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p8" value="a"><span class="choice-letter">A</span><span>At least one condition must be true</span></label><label><input type="radio" name="p8" value="b"><span class="choice-letter">B</span><span>Neither condition must be true</span></label><label><input type="radio" name="p8" value="c"><span class="choice-letter">C</span><span>Both conditions must be true</span></label><label><input type="radio" name="p8" value="d"><span class="choice-letter">D</span><span>The first condition is ignored</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &amp; represents AND, so both conditions must evaluate to TRUE." data-incorrect="Not quite. The &amp; operator combines conditions using AND."></div>
+</div>
+
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 10</span>
+    <span class="topic-tag">Topic 2</span>
+  </div>
+  <p class="question-text">Which code correctly keeps rows where <code>is_smoker</code> is missing?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p9" value="a"><span class="choice-letter">A</span><span><code>filter(is_smoker == NA)</code></span></label><label><input type="radio" name="p9" value="b"><span class="choice-letter">B</span><span><code>filter(is_smoker == "NA")</code></span></label><label><input type="radio" name="p9" value="c"><span class="choice-letter">C</span><span><code>filter(is.na(is_smoker))</code></span></label><label><input type="radio" name="p9" value="d"><span class="choice-letter">D</span><span><code>filter(!is.na(is_smoker))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. is.na() is the appropriate function for identifying missing values." data-incorrect="Not quite. Missing values must be identified with is.na(), not equality operators."></div>
+</div>
+
+
+<section class="topic-panel">
+  <div class="topic-kicker">Module 3 of 4</div>
+  <h2 class="anchored">Topic 3: Mutating Columns</h2>
+  <p>Assess your understanding of creating and modifying variables, numerical transformations, logical variables, and type conversion.</p>
+</section>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 11</span>
+    <span class="topic-tag">Topic 3</span>
+  </div>
+  <p class="question-text">What is the main purpose of <code>dplyr::mutate()</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p10" value="a"><span class="choice-letter">A</span><span>To remove rows</span></label><label><input type="radio" name="p10" value="b"><span class="choice-letter">B</span><span>To create new columns or modify existing columns</span></label><label><input type="radio" name="p10" value="c"><span class="choice-letter">C</span><span>To rename an entire data frame</span></label><label><input type="radio" name="p10" value="d"><span class="choice-letter">D</span><span>To arrange rows alphabetically</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. mutate() creates new variables or changes existing variables." data-incorrect="Not quite. mutate() is used for column-level transformations."></div>
+</div>
+
+
+<div class="practice" data-answer="a">
+  <div class="practice-meta">
+    <span class="practice-title">Question 12</span>
+    <span class="topic-tag">Topic 3</span>
+  </div>
+  <p class="question-text">Which code creates a new variable called <code>height_meters</code> from <code>height_cm</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p11" value="a"><span class="choice-letter">A</span><span><code>mutate(height_meters = height_cm / 100)</code></span></label><label><input type="radio" name="p11" value="b"><span class="choice-letter">B</span><span><code>filter(height_meters = height_cm / 100)</code></span></label><label><input type="radio" name="p11" value="c"><span class="choice-letter">C</span><span><code>select(height_meters = height_cm / 100)</code></span></label><label><input type="radio" name="p11" value="d"><span class="choice-letter">D</span><span><code>rename(height_meters = height_cm / 100)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. mutate() creates height_meters by dividing height_cm by 100." data-incorrect="Not quite. Use mutate(new_variable = transformation)."></div>
+</div>
+
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 13</span>
+    <span class="topic-tag">Topic 3</span>
+  </div>
+  <p class="question-text">What type of variable is created by <code>yao %&gt;% mutate(is_child = age &lt;= 18)</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p12" value="a"><span class="choice-letter">A</span><span>Character variable</span></label><label><input type="radio" name="p12" value="b"><span class="choice-letter">B</span><span>Date variable</span></label><label><input type="radio" name="p12" value="c"><span class="choice-letter">C</span><span>Boolean or logical variable</span></label><label><input type="radio" name="p12" value="d"><span class="choice-letter">D</span><span>Factor variable</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. The comparison returns TRUE or FALSE, producing a logical variable." data-incorrect="Not quite. A relational comparison such as age <= 18 returns TRUE or FALSE."></div>
+</div>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 14</span>
+    <span class="topic-tag">Topic 3</span>
+  </div>
+  <p class="question-text">What happens when an existing column name is used inside <code>mutate()</code>, as in <code>mutate(height_cm = height_cm + 5)</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p13" value="a"><span class="choice-letter">A</span><span>A duplicate <code>height_cm</code> column is created</span></label><label><input type="radio" name="p13" value="b"><span class="choice-letter">B</span><span>The existing <code>height_cm</code> column is modified</span></label><label><input type="radio" name="p13" value="c"><span class="choice-letter">C</span><span>The <code>height_cm</code> column is removed</span></label><label><input type="radio" name="p13" value="d"><span class="choice-letter">D</span><span>The data frame is filtered</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Reusing an existing column name replaces that column with the transformed values." data-incorrect="Not quite. mutate() overwrites an existing column when the same name is assigned."></div>
+</div>
+
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 15</span>
+    <span class="topic-tag">Topic 3</span>
+  </div>
+  <p class="question-text">What happens when <code>as.integer()</code> is applied to the value <code>22.8</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p14" value="a"><span class="choice-letter">A</span><span>It becomes <code>23</code></span></label><label><input type="radio" name="p14" value="b"><span class="choice-letter">B</span><span>It becomes <code>"22.8"</code></span></label><label><input type="radio" name="p14" value="c"><span class="choice-letter">C</span><span>It becomes <code>22</code></span></label><label><input type="radio" name="p14" value="d"><span class="choice-letter">D</span><span>It becomes <code>NA</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. as.integer() truncates the decimal portion rather than rounding." data-incorrect="Not quite. as.integer() truncates 22.8 to 22."></div>
+</div>
+
+
+<section class="topic-panel">
+  <div class="topic-kicker">Module 4 of 4</div>
+  <h2 class="anchored">Topic 4: Pivoting Data</h2>
+  <p>Assess your understanding of wide and long formats, <code>pivot_longer()</code>, <code>pivot_wider()</code>, and analysis-ready data structures.</p>
+</section>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 16</span>
+    <span class="topic-tag">Topic 4</span>
+  </div>
+  <p class="question-text">A dataset contains one row per country and separate columns named <code>x2019</code>, <code>x2020</code>, and <code>x2021</code>. What format is the dataset in?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p15" value="a"><span class="choice-letter">A</span><span>Long format</span></label><label><input type="radio" name="p15" value="b"><span class="choice-letter">B</span><span>Wide format</span></label><label><input type="radio" name="p15" value="c"><span class="choice-letter">C</span><span>Grouped format</span></label><label><input type="radio" name="p15" value="d"><span class="choice-letter">D</span><span>Filtered format</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Repeated measurements stored across separate columns indicate wide format." data-incorrect="Not quite. One row per country with years spread across columns is wide format."></div>
+</div>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 17</span>
+    <span class="topic-tag">Topic 4</span>
+  </div>
+  <p class="question-text">Which function converts a wide dataset into a long dataset?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p16" value="a"><span class="choice-letter">A</span><span><code>pivot_wider()</code></span></label><label><input type="radio" name="p16" value="b"><span class="choice-letter">B</span><span><code>pivot_longer()</code></span></label><label><input type="radio" name="p16" value="c"><span class="choice-letter">C</span><span><code>select_longer()</code></span></label><label><input type="radio" name="p16" value="d"><span class="choice-letter">D</span><span><code>mutate_longer()</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. pivot_longer() moves repeated columns into key and value columns." data-incorrect="Not quite. Use pivot_longer() when moving from wide to long format."></div>
+</div>
+
+
+<div class="practice" data-answer="a">
+  <div class="practice-meta">
+    <span class="practice-title">Question 18</span>
+    <span class="topic-tag">Topic 4</span>
+  </div>
+  <p class="question-text">In <code>pivot_longer()</code>, what does the <code>names_to</code> argument specify?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p17" value="a"><span class="choice-letter">A</span><span>The name of the column that will contain the former column names</span></label><label><input type="radio" name="p17" value="b"><span class="choice-letter">B</span><span>The values that should be deleted</span></label><label><input type="radio" name="p17" value="c"><span class="choice-letter">C</span><span>The data frame that should be imported</span></label><label><input type="radio" name="p17" value="d"><span class="choice-letter">D</span><span>The number of rows to retain</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. names_to defines the new column that stores the names of the pivoted columns." data-incorrect="Not quite. names_to identifies where the former column names should be stored."></div>
+</div>
+
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 19</span>
+    <span class="topic-tag">Topic 4</span>
+  </div>
+  <p class="question-text">Which code correctly converts annual population data from long to wide format when the columns are <code>country</code>, <code>year</code>, and <code>population</code>?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p18" value="a"><span class="choice-letter">A</span><span><code>population %&gt;% pivot_longer(names_to = year, values_to = population)</code></span></label><label><input type="radio" name="p18" value="b"><span class="choice-letter">B</span><span><code>population %&gt;% pivot_wider(names_from = year, values_from = population)</code></span></label><label><input type="radio" name="p18" value="c"><span class="choice-letter">C</span><span><code>population %&gt;% select(year, population)</code></span></label><label><input type="radio" name="p18" value="d"><span class="choice-letter">D</span><span><code>population %&gt;% mutate(year = population)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. pivot_wider() uses year for the new column names and population for the cell values." data-incorrect="Not quite. Use pivot_wider(names_from = year, values_from = population)."></div>
+</div>
+
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 20</span>
+    <span class="topic-tag">Topic 4</span>
+  </div>
+  <p class="question-text">Why is long-format data often preferred for analysis and visualization in R?</p>
+  <div class="choice-set">
+    <label><input type="radio" name="p19" value="a"><span class="choice-letter">A</span><span>It always contains fewer observations</span></label><label><input type="radio" name="p19" value="b"><span class="choice-letter">B</span><span>It prevents missing values</span></label><label><input type="radio" name="p19" value="c"><span class="choice-letter">C</span><span>Variables such as year and measurement are stored in separate columns, making grouping, filtering, summarizing, and plotting easier</span></label><label><input type="radio" name="p19" value="d"><span class="choice-letter">D</span><span>It eliminates the need for data cleaning</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Long format places analytical variables in their own columns, which works well with dplyr and ggplot2." data-incorrect="Not quite. The main advantage is that analytical variables are represented explicitly in separate columns."></div>
+</div>
+
+
+<section class="completion-panel">
+  <h2 class="anchored">Assessment result</h2>
+  <p>Your score updates as you check each question. The completion code will be displayed when you reach the required standard.</p>
+
+  <div class="score-row">
+    <div class="progress-track" aria-label="Quiz progress">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="score-value" id="score-value">0 / 20</div>
+  </div>
+
+  <div class="score-details">
+    <span id="answered-progress">0 of 20 questions checked</span>
+    <span id="code-progress">Need at least 16 correct answers</span>
+  </div>
+
+  <div class="code-box" id="code-box">
+    <div class="code-label">Your completion code</div>
+    <div class="code-value" id="code-value"></div>
+  </div>
+
+  <div style="margin-top:1rem;">
+    <button type="button" class="reset-button" id="reset-quiz">Reset quiz</button>
+  </div>
+</section>
+
+<p class="footer-note">SI Analytics | Data Manipulations in R interactive assessment</p>
+
+</div>
+
+<script>
+const COMPLETION_CODE = "DMR20PASS";
+const COMPLETION_REQUIRED = 16;
+
+function updateCompletion() {
+  const cards = [...document.querySelectorAll(".practice")];
+  const correct = cards.filter(card => card.classList.contains("is-correct")).length;
+  const answered = cards.filter(card => card.dataset.checked === "true").length;
+  const total = cards.length;
+  const percent = total ? Math.round((correct / total) * 100) : 0;
+
+  const scoreValue = document.getElementById("score-value");
+  const answeredProgress = document.getElementById("answered-progress");
+  const codeProgress = document.getElementById("code-progress");
+  const progressFill = document.getElementById("progress-fill");
+  const codeBox = document.getElementById("code-box");
+  const codeValue = document.getElementById("code-value");
+
+  if (scoreValue) scoreValue.textContent = correct + " / " + total;
+  if (answeredProgress) answeredProgress.textContent = answered + " of " + total + " questions checked";
+  if (progressFill) progressFill.style.width = percent + "%";
+
+  if (correct >= COMPLETION_REQUIRED) {
+    if (codeProgress) codeProgress.textContent = "Completion standard achieved";
+    if (codeValue) codeValue.textContent = COMPLETION_CODE;
+    if (codeBox) codeBox.style.display = "block";
+  } else {
+    const remaining = COMPLETION_REQUIRED - correct;
+    if (codeProgress) codeProgress.textContent = "Need " + remaining + " more correct answer" + (remaining === 1 ? "" : "s");
+    if (codeBox) codeBox.style.display = "none";
+  }
+}
+
+document.querySelectorAll(".practice").forEach((card) => {
+  const button = card.querySelector(".check-button");
+  const feedback = card.querySelector(".practice-feedback");
+  const status = card.querySelector(".question-status");
+  const answer = card.dataset.answer;
+
+  button.addEventListener("click", () => {
+    const selected = card.querySelector("input[type='radio']:checked");
+
+    card.classList.remove("is-correct", "is-incorrect");
+    card.querySelectorAll("label").forEach((label) => {
+      label.classList.remove("correct-choice", "incorrect-choice");
+    });
+
+    if (!selected) {
+      card.dataset.checked = "false";
+      card.classList.add("is-incorrect");
+      feedback.textContent = "Choose an answer first, then check it.";
+      if (status) status.textContent = "No option selected";
+      updateCompletion();
+      return;
+    }
+
+    card.dataset.checked = "true";
+    const selectedLabel = selected.closest("label");
+    const correctInput = card.querySelector('input[value="' + answer + '"]');
+    const correctLabel = correctInput ? correctInput.closest("label") : null;
+
+    if (selected.value === answer) {
+      card.classList.add("is-correct");
+      selectedLabel.classList.add("correct-choice");
+      feedback.textContent = feedback.dataset.correct;
+      if (status) status.textContent = "Correct";
+    } else {
+      card.classList.add("is-incorrect");
+      selectedLabel.classList.add("incorrect-choice");
+      if (correctLabel) correctLabel.classList.add("correct-choice");
+      feedback.textContent = feedback.dataset.incorrect;
+      if (status) status.textContent = "Review and try again";
+    }
+
+    updateCompletion();
+  });
+});
+
+document.getElementById("reset-quiz").addEventListener("click", () => {
+  document.querySelectorAll(".practice").forEach((card) => {
+    card.classList.remove("is-correct", "is-incorrect");
+    card.dataset.checked = "false";
+    card.querySelectorAll("input[type='radio']").forEach(input => input.checked = false);
+    card.querySelectorAll("label").forEach(label => {
+      label.classList.remove("correct-choice", "incorrect-choice");
+    });
+    const feedback = card.querySelector(".practice-feedback");
+    const status = card.querySelector(".question-status");
+    if (feedback) {
+      feedback.style.display = "";
+      feedback.textContent = "";
+    }
+    if (status) status.textContent = "";
+  });
+  updateCompletion();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+updateCompletion();
+</script>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
