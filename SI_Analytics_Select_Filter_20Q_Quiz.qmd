@@ -1,0 +1,785 @@
+---
+title: "Selecting Columns and Filtering Rows in R"
+subtitle: "SI Analytics Interactive Knowledge Assessment"
+author: "SI Analytics"
+format:
+  html:
+    toc: false
+    number-sections: false
+    theme: cosmo
+    page-layout: full
+    smooth-scroll: true
+---
+
+<style>
+:root {
+  --navy: #0B1736;
+  --navy-2: #122449;
+  --teal: #0F766E;
+  --teal-dark: #0B5B56;
+  --teal-soft: #E9F7F5;
+  --gold: #F4C542;
+  --gold-soft: #FFF8DC;
+  --ink: #172033;
+  --muted: #667085;
+  --page: #F3F6FA;
+  --card: #FFFFFF;
+  --border: #DCE3EC;
+  --good: #166534;
+  --good-bg: #ECFDF3;
+  --bad: #B42318;
+  --bad-bg: #FEF3F2;
+  --shadow: 0 18px 48px rgba(11, 23, 54, 0.10);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(circle at 92% 3%, rgba(15,118,110,0.08), transparent 24rem),
+    var(--page);
+  color: var(--ink);
+  font-family: Inter, "Segoe UI", Arial, Helvetica, sans-serif;
+}
+.quarto-title-block { display: none; }
+
+.page-shell {
+  width: min(1020px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 3.5rem;
+}
+
+.masthead {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(132deg, var(--navy) 0%, var(--navy-2) 58%, var(--teal-dark) 100%);
+  color: #FFFFFF;
+  border-radius: 22px;
+  border-top: 6px solid var(--gold);
+  padding: 2.15rem 2.2rem 2.25rem;
+  margin-bottom: 1.15rem;
+  box-shadow: 0 22px 58px rgba(11, 23, 54, 0.20);
+}
+.masthead::after {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  right: -105px;
+  top: -135px;
+  border-radius: 50%;
+  border: 46px solid rgba(255,255,255,0.055);
+}
+.brand-line { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1.35rem; }
+.brand-lockup { display:flex; align-items:center; gap:0.85rem; min-width:0; }
+.brand-logo { width:54px; height:54px; object-fit:contain; background:#fff; border-radius:11px; padding:5px; box-shadow:0 6px 20px rgba(0,0,0,0.16); }
+.brand-name { font-size:0.98rem; font-weight:850; letter-spacing:0.075em; text-transform:uppercase; }
+.brand-sub { color:#B8C9DE; font-size:0.76rem; margin-top:0.12rem; }
+.assessment-badge {
+  display:inline-flex; align-items:center; gap:0.4rem; padding:0.46rem 0.72rem;
+  border:1px solid rgba(255,255,255,0.28); border-radius:999px; color:#D9F4F1;
+  font-size:0.72rem; font-weight:800; letter-spacing:0.055em; text-transform:uppercase;
+}
+.eyebrow { color:var(--gold); font-size:0.78rem; font-weight:850; letter-spacing:0.11em; text-transform:uppercase; margin-bottom:0.38rem; }
+.masthead h1 { color:#fff; font-size:clamp(2rem,4vw,3rem); line-height:1.06; font-weight:850; margin:0; max-width:790px; }
+.masthead p { max-width:760px; margin:0.88rem 0 0; color:#DCE7F2; font-size:1rem; line-height:1.72; }
+
+.metric-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0.7rem; margin-top:1.45rem; max-width:720px; }
+.metric { border:1px solid rgba(255,255,255,0.18); border-radius:12px; padding:0.72rem 0.82rem; background:rgba(255,255,255,0.055); }
+.metric strong { display:block; color:#fff; font-size:1.15rem; }
+.metric span { color:#C8D7E8; font-size:0.76rem; }
+
+.panel, .topic-panel, .practice, .completion-panel, .reinforce-panel { background:var(--card); border:1px solid var(--border); border-radius:15px; }
+.panel { padding:1.35rem 1.5rem; margin-bottom:1rem; box-shadow:0 8px 28px rgba(11,23,54,0.045); }
+.panel h2, .topic-panel h2, .completion-panel h2, .reinforce-panel h2 { color:var(--navy); font-weight:850; margin-top:0; }
+.panel h2 { font-size:1.34rem; margin-bottom:0.72rem; padding-bottom:0.55rem; border-bottom:3px solid var(--gold); }
+.panel p:last-child { margin-bottom:0; }
+
+.outcomes-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.82rem; margin-top:1rem; }
+.outcome-card { background:#F8FAFC; border:1px solid var(--border); border-radius:13px; padding:1rem; }
+.outcome-top { display:flex; justify-content:space-between; gap:0.8rem; align-items:center; }
+.outcome-number { color:var(--teal); font-weight:900; font-size:1.2rem; }
+.outcome-count { color:var(--muted); font-size:0.76rem; font-weight:750; }
+.outcome-label { color:var(--ink); font-weight:800; font-size:0.96rem; margin-top:0.3rem; }
+.outcome-card p { color:var(--muted); font-size:0.86rem; line-height:1.55; margin:0.42rem 0 0; }
+
+.instructions { background:var(--gold-soft); border-left:5px solid var(--gold); border-radius:12px; padding:1rem 1.1rem; margin-top:1rem; }
+.instructions strong { color:var(--navy); }
+
+.topic-panel { margin:1.55rem 0 0.92rem; padding:1.25rem 1.4rem; border-left:6px solid var(--teal); box-shadow:0 8px 24px rgba(11,23,54,0.035); }
+.topic-panel h2 { font-size:1.45rem; margin-bottom:0.36rem; }
+.topic-panel p { color:var(--muted); margin:0; line-height:1.58; }
+.topic-kicker { color:var(--teal); font-size:0.74rem; font-weight:850; letter-spacing:0.09em; text-transform:uppercase; margin-bottom:0.35rem; }
+
+.practice { padding:1.14rem 1.22rem; margin:0.9rem 0; border-top:4px solid var(--gold); box-shadow:0 7px 22px rgba(11,23,54,0.05); transition:box-shadow .18s, transform .18s; }
+.practice:hover { box-shadow:0 12px 32px rgba(11,23,54,0.075); }
+.practice-meta { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:0.48rem; }
+.practice-title { color:var(--teal); font-weight:900; font-size:0.79rem; text-transform:uppercase; letter-spacing:0.07em; }
+.topic-tag { background:var(--teal-soft); color:var(--teal-dark); border-radius:999px; padding:0.27rem 0.58rem; font-size:0.71rem; font-weight:850; }
+.question-text { font-size:1.02rem; line-height:1.67; font-weight:680; margin-bottom:0.82rem; }
+.choice-set { display:grid; gap:0.58rem; margin:0.82rem 0; }
+.choice-set label { display:flex; gap:0.72rem; align-items:flex-start; border:2px solid var(--border); border-radius:11px; padding:0.8rem 0.86rem; cursor:pointer; transition:border-color .15s, background .15s, transform .15s; }
+.choice-set label:hover { border-color:#78BEB8; background:#F2FBFA; transform:translateY(-1px); }
+.choice-set input { appearance:none; width:1.12rem; height:1.12rem; border:2px solid #AABBCB; border-radius:50%; margin-top:0.18rem; flex:0 0 auto; }
+.choice-set input:checked { border-color:var(--teal); background:radial-gradient(circle at center,#fff 0 34%,transparent 36%),var(--teal); }
+.choice-letter { display:inline-flex; align-items:center; justify-content:center; min-width:1.56rem; height:1.56rem; border-radius:6px; background:#EAF0F5; color:var(--navy); font-size:0.78rem; font-weight:900; }
+.question-actions { display:flex; align-items:center; gap:0.82rem; flex-wrap:wrap; }
+.check-button, .reset-button { background:var(--teal); color:#fff; border:0; border-radius:999px; padding:0.62rem 1.08rem; font-weight:850; cursor:pointer; transition:background .15s, transform .15s; }
+.check-button:hover { background:var(--teal-dark); transform:translateY(-1px); }
+.reset-button { background:var(--navy); }
+.reset-button:hover { background:#172B53; transform:translateY(-1px); }
+.question-status { color:var(--muted); font-size:0.86rem; font-weight:750; }
+.practice-feedback { display:none; margin-top:0.88rem; border-radius:10px; padding:0.82rem 0.92rem; line-height:1.58; }
+.practice.is-correct .practice-feedback { display:block; background:var(--good-bg); color:#174527; border:1px solid #A7D8B8; }
+.practice.is-incorrect .practice-feedback { display:block; background:var(--bad-bg); color:#612018; border:1px solid #F0B5B5; }
+.practice label.correct-choice { border-color:var(--good); background:var(--good-bg); }
+.practice label.incorrect-choice { border-color:var(--bad); background:var(--bad-bg); }
+
+code { background:rgba(15,118,110,0.09); border-radius:5px; padding:0.09rem 0.32rem; color:#123D3A; white-space:normal; }
+
+.completion-panel { margin-top:1.8rem; padding:1.42rem 1.5rem; border-top:5px solid var(--gold); box-shadow:var(--shadow); }
+.completion-panel h2 { font-size:1.48rem; margin-bottom:0.5rem; }
+.score-row { display:grid; grid-template-columns:1fr auto; gap:1rem; align-items:center; margin-top:1rem; }
+.progress-track { width:100%; height:14px; background:#E2E8F0; border-radius:999px; overflow:hidden; }
+.progress-fill { width:0%; height:100%; background:linear-gradient(90deg,var(--teal),#19A89B); transition:width .25s ease; }
+.score-value { color:var(--navy); font-weight:900; min-width:95px; text-align:right; }
+.score-details { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-top:0.76rem; color:var(--muted); font-size:0.92rem; }
+.code-box { display:none; text-align:center; background:linear-gradient(135deg,var(--navy),var(--teal-dark)); color:#fff; border-radius:13px; padding:1.25rem; margin-top:1rem; }
+.code-box .code-label { color:var(--gold); font-size:0.76rem; font-weight:850; letter-spacing:0.1em; text-transform:uppercase; }
+.code-box .code-value { font-family:Consolas,"SFMono-Regular",monospace; font-size:1.72rem; font-weight:900; letter-spacing:0.09em; margin-top:0.36rem; word-break:break-word; }
+.code-box .code-note { color:#DCE7F2; font-size:0.84rem; margin-top:0.4rem; }
+
+.reinforce-panel { margin-top:1.1rem; padding:1.42rem 1.5rem; }
+.reinforce-panel h2 { font-size:1.42rem; margin-bottom:0.42rem; }
+.reinforce-intro { color:var(--muted); line-height:1.62; margin-bottom:1rem; }
+.reinforce-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.85rem; }
+.reinforce-card { background:#F8FAFC; border:1px solid var(--border); border-radius:13px; padding:1rem 1.05rem; }
+.reinforce-card h3 { color:var(--navy); font-size:1rem; font-weight:850; margin:0 0 0.65rem; }
+.reinforce-card ul { margin:0; padding-left:1.12rem; color:#344054; }
+.reinforce-card li { margin:0.46rem 0; line-height:1.52; }
+.memory-rule { margin-top:0.9rem; background:var(--teal-soft); border:1px solid #B7E1DD; border-radius:12px; padding:0.95rem 1rem; color:#174A46; }
+.memory-rule strong { color:var(--teal-dark); }
+.footer-note { color:var(--muted); text-align:center; margin-top:2rem; font-size:0.88rem; }
+
+@media (max-width:760px) {
+  .page-shell { width:min(100% - 1rem,1020px); }
+  .masthead { padding:1.5rem 1.28rem; border-radius:16px; }
+  .brand-line { align-items:flex-start; flex-direction:column; }
+  .metric-strip, .outcomes-grid, .reinforce-grid { grid-template-columns:1fr; }
+  .practice { padding:1rem; }
+  .choice-set label { padding:0.74rem; }
+}
+@media (max-width:480px) {
+  .score-row { grid-template-columns:1fr; }
+  .score-value { text-align:left; }
+  .brand-logo { width:48px; height:48px; }
+}
+</style>
+
+```{=html}
+<div class="page-shell">
+
+<header class="masthead">
+  <div class="brand-line">
+    <div class="brand-lockup">
+      <img class="brand-logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wgARCAMgAyADASIAAhEBAxEB/8QAGgABAAMBAQEAAAAAAAAAAAAAAAMEBQYCAf/EABgBAQEBAQEAAAAAAAAAAAAAAAABAgME/9oADAMBAAIQAxAAAALfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPh9Z+bZ0UPJ19Tp6mG1NOCmqfzEqX7CLVjNRvaXHpe6cp0fO2BKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfMxNSnztPc2MufR1MN1V2Xj5+sRzXvokvOQ9SOMg7qtZxzXyNwKASRjsbPK9Vx0EoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAy008nGvbmdL0loxdSZmhKAAAAAztEnDfNvE7ZCgHb8R2WLYHPQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Hunl/dSpd2ZCOQzQAAAAAAAAK3Hd1w3TPwbgDteO7bnQxoAAAAAAAAAAAAAAAAAAAAAA+QJYRyAjJHj2AoB8hScKAMhLOXe1NK9gzQACrMkgUAAAAgkT2FAZ+gTPaCs9oCldIBQAAAAAAAAAAAAAAAAIKfyxrncGegADz6opke/PSb48vu2fWdsDfwKt6mXqShNgZeNYs9PNpWsPcx2EM1N4igsvqV2URkjOksuia57Uy9TfC6jr463A0UL6R5/ylrl0Spbz156/PNrnKfM9fqh5uNF59TRXq2aSCeUFAAAAAAAAAAAAAAAAPmUzqY8tDXPfl+fc9QUABHITlpugo74tHmNSa08DfwFt6mXqShNqtrDuKvR4mhrGH1HOaaaWdo52emTqVd3WOY3M22mljbMeetDO0s/XHTv5Otnrz2pl6mudvl+qxZrVrVq586CncmsKDTp65XdAx3wL9C/vjoYO7yk1oT6fqWnZ9+ZrmNjItdOFvTq2sdwmgAAAAAAAAAAAAAAB8KmZv4uuVq3y/QpcGewAACKWmzJY5j5vndlo9ASYG/gTVvUy9SUJvzy2zQ3wtfdZnph1+j5fXPqc6zWz0p7uFu2YdqrauNDmen5mXao+PNlrWydbPTntTL1Nc7sMzHblpJL3Tz6Y5+nOp6nP74dSxNvPXAv0L+uWhynV5s3cm5iRnovtC3np7oZfvfOv1OLtShnqAAAAAAAAAAAAAABBz1ur08+xldDFnpQ1+e1ktjPUAAAB59EBQAABEkrz6AU+fQAAD59AAB59Qpz3S1LtwPk6ffn0AAAfH0gK8+iAoAAAAAAAAAAAAAAAFanFmb4dPzu3klbpa0C69P1Xx1kuV/C+ZPAu0Japq1bOUaXyOmW7GTsFWfI1iKxS9p9eaxZ+w+j7ezdJVazlkluvCXPcEZO91i7VtZRrVZoT2qSk8Xj6XK8lI0kUpWgjnJpKl4qy1vpY8x+C5VuZpd8KhbsUL4q+/p4+wixF4F2n9rmpXsY5rVrWQadWxVNCtZqE3mt7LMHkXgAAAAAAAcve2aeuMvrmdcr5/29vno3aFrn3lE2BXsAAV42bill2dBibdMuUb6a8+gQzFq2gAAAAAAAAAilAAAAABUtiKUAAAAAAAAAAAAAAAAAAHPdDDcc/0f30R5Ovy1x83szYsoszeLmNczJrZiuZ01kdTSupy2xbmsr+5WegKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqWyfPovn0ICgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/aAAwDAQACAAMAAAAh8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888886jxygAyw+888888888888888888888888888888888888887zJKdsevOCCC288888888888888888888888888888888888/7nt888888vKCCA88888888888888888888888888888888882u8888888888oCCP8APPPPPPPPPPPPPPPPPPPPPPOPeffPNfPPzPPPNvPPPPNPPLzTf/PPPPPPPPPPPPPPPPPDPPPLju/FvPMXfbfucPAc+Ok9mfNfeNfPPPPPPPPPPPPPPPPP91fPPLWQvFvLZJaRCaB9QXEpg/lYly/VPPPPPPPPPPPPPPPPOBO/PPPP1JPFvFbsolAV8lgbZfAdFXE2yPfPPPPPPPPPPPPPPPCOOfPPPPPfPPPPffPPPLHPPKX/ADzzzz3x3zzzzzzzzzzzzzzzzyaWjwxTgyRSRmpJyyQDxTyjhzxQywRjRzSzyyhgRCjzzzzzzzzxf9xnzyyTObb72zyzzzyzxzyzxzzzzzxzzzyzyyzxzzzzzzzzzzlYOq4Ia9X7zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzy6z3zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz/2gAMAwEAAgADAAAAEPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP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" alt="SI Analytics logo">
+      <div>
+        <div class="brand-name">SI Analytics</div>
+        <div class="brand-sub">Data to evidence to insight to action</div>
+      </div>
+    </div>
+    <div class="assessment-badge">Interactive knowledge assessment</div>
+  </div>
+  <div class="eyebrow">Data Manipulations in R</div>
+  <h1>Select columns and filter rows with confidence</h1>
+  <p>A focused, self-marking assessment covering the two foundational dplyr skills from your lessons: selecting and renaming columns, and filtering rows.</p>
+  <div class="metric-strip">
+    <div class="metric"><strong>20</strong><span>Focused questions</span></div>
+    <div class="metric"><strong>2</strong><span>Core lesson areas</span></div>
+    <div class="metric"><strong>80%</strong><span>Completion standard</span></div>
+  </div>
+</header>
+
+<section class="panel">
+  <h2>Assessment overview</h2>
+  <p>This quiz is intentionally limited to the content in the <strong>Selecting and renaming columns</strong> and <strong>Filtering rows</strong> lessons. Each question has one correct answer. Select an option and use <strong>Check answer</strong> for immediate feedback and reinforcement.</p>
+
+  <div class="outcomes-grid">
+    <div class="outcome-card">
+      <div class="outcome-top"><div class="outcome-number">01</div><div class="outcome-count">Questions 1 to 10</div></div>
+      <div class="outcome-label">Selecting and renaming columns</div>
+      <p>Selection by name and position, ranges, exclusion, helper functions, reordering, and renaming.</p>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-top"><div class="outcome-number">02</div><div class="outcome-count">Questions 11 to 20</div></div>
+      <div class="outcome-label">Filtering rows</div>
+      <p>Relational operators, membership, AND/OR logic, negation, and handling missing values.</p>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <strong>Completion standard:</strong> Achieve at least <strong>16 correct answers out of 20</strong>, equivalent to 80%, to reveal your success code. You may revise an answer and check it again.
+  </div>
+</section>
+
+<section class="topic-panel">
+  <div class="topic-kicker">Module 1 of 2</div>
+  <h2>Selecting and Renaming Columns</h2>
+  <p>Focus on <code>select()</code>, column ranges, exclusion, tidyselect helpers, reordering, and the <code>new_name = old_name</code> renaming pattern.</p>
+</section>
+
+<div class="practice" data-answer="a">
+  <div class="practice-meta">
+    <span class="practice-title">Question 1</span>
+    <span class="topic-tag">Selection</span>
+  </div>
+  <p class="question-text">What is the primary purpose of <code>dplyr::select()</code>?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p0" value="a"><span class="choice-letter">A</span><span>To keep, remove, or reorder columns in a data frame</span></label>
+      <label><input type="radio" name="p0" value="b"><span class="choice-letter">B</span><span>To keep or remove rows that meet a condition</span></label>
+      <label><input type="radio" name="p0" value="c"><span class="choice-letter">C</span><span>To calculate grouped summary statistics</span></label>
+      <label><input type="radio" name="p0" value="d"><span class="choice-letter">D</span><span>To join two data frames together</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;select()&lt;/code&gt; works with columns. It can keep, exclude, or reorder variables." data-incorrect="Review the role of &lt;code&gt;select()&lt;/code&gt;. It is a column-focused verb, not a row-filtering or summarizing function."></div>
+</div>
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 2</span>
+    <span class="topic-tag">Selection</span>
+  </div>
+  <p class="question-text">Which code selects only <code>age</code>, <code>sex</code>, and <code>igg_result</code> from <code>yaounde</code>?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p1" value="a"><span class="choice-letter">A</span><span><code>yaounde %&gt;% filter(age, sex, igg_result)</code></span></label>
+      <label><input type="radio" name="p1" value="b"><span class="choice-letter">B</span><span><code>yaounde %&gt;% select(age, sex, igg_result)</code></span></label>
+      <label><input type="radio" name="p1" value="c"><span class="choice-letter">C</span><span><code>yaounde %&gt;% rename(age, sex, igg_result)</code></span></label>
+      <label><input type="radio" name="p1" value="d"><span class="choice-letter">D</span><span><code>yaounde %&gt;% select(age | sex | igg_result)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Multiple columns are selected by listing their names, separated by commas, inside &lt;code&gt;select()&lt;/code&gt;." data-incorrect="Use &lt;code&gt;select()&lt;/code&gt; and list the required variable names separated by commas."></div>
+</div>
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 3</span>
+    <span class="topic-tag">Selection</span>
+  </div>
+  <p class="question-text">The <code>age</code> variable is the third column of <code>yaounde</code>. Which expression selects it by position?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p2" value="a"><span class="choice-letter">A</span><span><code>yaounde %&gt;% select(age == 3)</code></span></label>
+      <label><input type="radio" name="p2" value="b"><span class="choice-letter">B</span><span><code>yaounde %&gt;% filter(3)</code></span></label>
+      <label><input type="radio" name="p2" value="c"><span class="choice-letter">C</span><span><code>yaounde %&gt;% select(3)</code></span></label>
+      <label><input type="radio" name="p2" value="d"><span class="choice-letter">D</span><span><code>yaounde %&gt;% rename(3)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;select(3)&lt;/code&gt; selects the third column by position." data-incorrect="The lesson shows that &lt;code&gt;select()&lt;/code&gt; can select a variable by either name or numeric position."></div>
+</div>
+
+<div class="practice" data-answer="a">
+  <div class="practice-meta">
+    <span class="practice-title">Question 4</span>
+    <span class="topic-tag">Selection</span>
+  </div>
+  <p class="question-text">Which code selects every column from <code>age</code> through <code>occupation</code>, including both endpoints?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p3" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% select(age:occupation)</code></span></label>
+      <label><input type="radio" name="p3" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% select(age, occupation)</code></span></label>
+      <label><input type="radio" name="p3" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% filter(age:occupation)</code></span></label>
+      <label><input type="radio" name="p3" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% select(c(age | occupation))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. The colon operator selects a consecutive range of columns, inclusive of the first and last variables." data-incorrect="For a consecutive column range, use the colon operator inside &lt;code&gt;select()&lt;/code&gt;."></div>
+</div>
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 5</span>
+    <span class="topic-tag">Selection</span>
+  </div>
+  <p class="question-text">What does <code>yao %&gt;% select(!age)</code> return?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p4" value="a"><span class="choice-letter">A</span><span>Only the <code>age</code> column</span></label>
+      <label><input type="radio" name="p4" value="b"><span class="choice-letter">B</span><span>Only rows where <code>age</code> is not missing</span></label>
+      <label><input type="radio" name="p4" value="c"><span class="choice-letter">C</span><span>Every column except <code>age</code></span></label>
+      <label><input type="radio" name="p4" value="d"><span class="choice-letter">D</span><span>A renamed version of the <code>age</code> column</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Inside &lt;code&gt;select()&lt;/code&gt;, &lt;code&gt;!&lt;/code&gt; negates the selection, so &lt;code&gt;age&lt;/code&gt; is excluded." data-incorrect="Within &lt;code&gt;select()&lt;/code&gt;, the exclamation mark excludes the specified column or selection."></div>
+</div>
+
+<div class="practice" data-answer="d">
+  <div class="practice-meta">
+    <span class="practice-title">Question 6</span>
+    <span class="topic-tag">Selection</span>
+  </div>
+  <p class="question-text">Which code drops the non-consecutive columns <code>age</code>, <code>sex</code>, and <code>igg_result</code>?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p5" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% select(age, sex, igg_result)</code></span></label>
+      <label><input type="radio" name="p5" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% select(!age, !sex, !igg_result)</code></span></label>
+      <label><input type="radio" name="p5" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% filter(!c(age, sex, igg_result))</code></span></label>
+      <label><input type="radio" name="p5" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% select(!c(age, sex, igg_result))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Place non-consecutive columns inside &lt;code&gt;c()&lt;/code&gt; and negate that selection with &lt;code&gt;!&lt;/code&gt;." data-incorrect="The lesson pattern for dropping several non-consecutive columns is &lt;code&gt;select(!c(...))&lt;/code&gt;."></div>
+</div>
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 7</span>
+    <span class="topic-tag">Helpers</span>
+  </div>
+  <p class="question-text">Which helper selects all columns whose names begin with <code>is_</code>?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p6" value="a"><span class="choice-letter">A</span><span><code>contains(&quot;is_&quot;)</code></span></label>
+      <label><input type="radio" name="p6" value="b"><span class="choice-letter">B</span><span><code>starts_with(&quot;is_&quot;)</code></span></label>
+      <label><input type="radio" name="p6" value="c"><span class="choice-letter">C</span><span><code>ends_with(&quot;is_&quot;)</code></span></label>
+      <label><input type="radio" name="p6" value="d"><span class="choice-letter">D</span><span><code>everything(&quot;is_&quot;)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;starts_with()&lt;/code&gt; matches variables by the beginning of their names." data-incorrect="Match the helper name to the location of the pattern. Here the variable names begin with &lt;code&gt;is_&lt;/code&gt;."></div>
+</div>
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 8</span>
+    <span class="topic-tag">Helpers</span>
+  </div>
+  <p class="question-text">Which expression selects <code>igg_result</code> and <code>igm_result</code> based on their shared suffix?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p7" value="a"><span class="choice-letter">A</span><span><code>select(starts_with(&quot;_result&quot;))</code></span></label>
+      <label><input type="radio" name="p7" value="b"><span class="choice-letter">B</span><span><code>select(contains(&quot;result_&quot;))</code></span></label>
+      <label><input type="radio" name="p7" value="c"><span class="choice-letter">C</span><span><code>select(ends_with(&quot;_result&quot;))</code></span></label>
+      <label><input type="radio" name="p7" value="d"><span class="choice-letter">D</span><span><code>select(everything(&quot;_result&quot;))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Both variables end in &lt;code&gt;_result&lt;/code&gt;, so &lt;code&gt;ends_with()&lt;/code&gt; is the appropriate helper." data-incorrect="Look at the shared pattern at the end of the two column names."></div>
+</div>
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 9</span>
+    <span class="topic-tag">Reordering</span>
+  </div>
+  <p class="question-text">Which code moves all columns beginning with <code>is_</code> to the front while retaining every other column?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p8" value="a"><span class="choice-letter">A</span><span><code>yaounde %&gt;% select(starts_with(&quot;is_&quot;))</code></span></label>
+      <label><input type="radio" name="p8" value="b"><span class="choice-letter">B</span><span><code>yaounde %&gt;% select(starts_with(&quot;is_&quot;), everything())</code></span></label>
+      <label><input type="radio" name="p8" value="c"><span class="choice-letter">C</span><span><code>yaounde %&gt;% select(everything(), starts_with(&quot;is_&quot;))</code></span></label>
+      <label><input type="radio" name="p8" value="d"><span class="choice-letter">D</span><span><code>yaounde %&gt;% rename(starts_with(&quot;is_&quot;), everything())</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;starts_with()&lt;/code&gt; places the matching columns first, and &lt;code&gt;everything()&lt;/code&gt; retains all remaining columns." data-incorrect="To reorder without dropping variables, select the priority columns first and then append &lt;code&gt;everything()&lt;/code&gt;."></div>
+</div>
+
+<div class="practice" data-answer="d">
+  <div class="practice-meta">
+    <span class="practice-title">Question 10</span>
+    <span class="topic-tag">Renaming</span>
+  </div>
+  <p class="question-text">Which code correctly renames <code>age</code> to <code>patient_age</code> and <code>sex</code> to <code>patient_sex</code>?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p9" value="a"><span class="choice-letter">A</span><span><code>rename(age = patient_age, sex = patient_sex)</code></span></label>
+      <label><input type="radio" name="p9" value="b"><span class="choice-letter">B</span><span><code>rename(age, patient_age, sex, patient_sex)</code></span></label>
+      <label><input type="radio" name="p9" value="c"><span class="choice-letter">C</span><span><code>rename(age == patient_age, sex == patient_sex)</code></span></label>
+      <label><input type="radio" name="p9" value="d"><span class="choice-letter">D</span><span><code>rename(patient_age = age, patient_sex = sex)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. With &lt;code&gt;rename()&lt;/code&gt;, the syntax is &lt;code&gt;new_name = old_name&lt;/code&gt;." data-incorrect="Remember the lesson warning: in &lt;code&gt;rename()&lt;/code&gt;, the new name comes first."></div>
+</div>
+
+<section class="topic-panel">
+  <div class="topic-kicker">Module 2 of 2</div>
+  <h2>Filtering Rows</h2>
+  <p>Focus on <code>filter()</code>, relational operators, <code>%in%</code>, logical operators, negation, and explicit handling of <code>NA</code> values.</p>
+</section>
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 11</span>
+    <span class="topic-tag">Filtering</span>
+  </div>
+  <p class="question-text">Which operator tests whether <code>sex</code> is equal to <code>&quot;Male&quot;</code> inside <code>filter()</code>?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p10" value="a"><span class="choice-letter">A</span><span><code>=</code></span></label>
+      <label><input type="radio" name="p10" value="b"><span class="choice-letter">B</span><span><code>==</code></span></label>
+      <label><input type="radio" name="p10" value="c"><span class="choice-letter">C</span><span><code>!=</code></span></label>
+      <label><input type="radio" name="p10" value="d"><span class="choice-letter">D</span><span><code>%in%</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;==&lt;/code&gt; tests equality. A single &lt;code&gt;=&lt;/code&gt; is used to specify values to function arguments." data-incorrect="Use the double equal sign when testing whether two values are equal."></div>
+</div>
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 12</span>
+    <span class="topic-tag">Relational operators</span>
+  </div>
+  <p class="question-text">Which code keeps only respondents who are children, defined in the lesson as under 18 years?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p11" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% select(age &lt; 18)</code></span></label>
+      <label><input type="radio" name="p11" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% filter(age &lt;= 18)</code></span></label>
+      <label><input type="radio" name="p11" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% filter(age &lt; 18)</code></span></label>
+      <label><input type="radio" name="p11" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% filter(age != 18)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;filter(age &amp;lt; 18)&lt;/code&gt; keeps rows where age is strictly below 18." data-incorrect="The lesson defines children here as respondents under 18, so the condition is &lt;code&gt;age &amp;lt; 18&lt;/code&gt;."></div>
+</div>
+
+<div class="practice" data-answer="a">
+  <div class="practice-meta">
+    <span class="practice-title">Question 13</span>
+    <span class="topic-tag">Relational operators</span>
+  </div>
+  <p class="question-text">Which expression keeps respondents aged at least 70 years?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p12" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% filter(age &gt;= 70)</code></span></label>
+      <label><input type="radio" name="p12" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% filter(age &gt; 70)</code></span></label>
+      <label><input type="radio" name="p12" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% filter(age &lt;= 70)</code></span></label>
+      <label><input type="radio" name="p12" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% select(age &gt;= 70)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. “At least 70” means 70 or older, represented by &lt;code&gt;&amp;gt;= 70&lt;/code&gt;." data-incorrect="“At least” includes the boundary value itself, so the correct operator is greater than or equal to."></div>
+</div>
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 14</span>
+    <span class="topic-tag">Membership</span>
+  </div>
+  <p class="question-text">Which code keeps respondents who live in either <code>Tsinga</code> or <code>Messa</code>?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p13" value="a"><span class="choice-letter">A</span><span><code>filter(neighborhood == c(&quot;Tsinga&quot;, &quot;Messa&quot;))</code></span></label>
+      <label><input type="radio" name="p13" value="b"><span class="choice-letter">B</span><span><code>filter(neighborhood %in% c(&quot;Tsinga&quot;, &quot;Messa&quot;))</code></span></label>
+      <label><input type="radio" name="p13" value="c"><span class="choice-letter">C</span><span><code>filter(neighborhood &amp; c(&quot;Tsinga&quot;, &quot;Messa&quot;))</code></span></label>
+      <label><input type="radio" name="p13" value="d"><span class="choice-letter">D</span><span><code>select(neighborhood %in% c(&quot;Tsinga&quot;, &quot;Messa&quot;))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;%in%&lt;/code&gt; tests whether each neighborhood belongs to the specified set of permitted values." data-incorrect="When one variable may match any value in a vector, use &lt;code&gt;%in%&lt;/code&gt; with &lt;code&gt;c()&lt;/code&gt;."></div>
+</div>
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 15</span>
+    <span class="topic-tag">AND logic</span>
+  </div>
+  <p class="question-text">Which code keeps respondents who are both male and IgG positive?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p14" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% filter(sex == &quot;Male&quot; | igg_result == &quot;Positive&quot;)</code></span></label>
+      <label><input type="radio" name="p14" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% filter(sex == &quot;Male&quot; %in% igg_result == &quot;Positive&quot;)</code></span></label>
+      <label><input type="radio" name="p14" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% filter(sex == &quot;Male&quot; &amp; igg_result == &quot;Positive&quot;)</code></span></label>
+      <label><input type="radio" name="p14" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% select(sex == &quot;Male&quot; &amp; igg_result == &quot;Positive&quot;)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;&amp;amp;&lt;/code&gt; represents AND, so both conditions must evaluate to TRUE." data-incorrect="The question requires both conditions to be true. Use the logical AND operator &lt;code&gt;&amp;amp;&lt;/code&gt;."></div>
+</div>
+
+<div class="practice" data-answer="d">
+  <div class="practice-meta">
+    <span class="practice-title">Question 16</span>
+    <span class="topic-tag">OR logic</span>
+  </div>
+  <p class="question-text">Which code keeps children under 18 OR anyone whose highest education is Primary school?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p15" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% filter(age &lt; 18 &amp; highest_education == &quot;Primary&quot;)</code></span></label>
+      <label><input type="radio" name="p15" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% filter(age &lt; 18, highest_education == &quot;Primary&quot;)</code></span></label>
+      <label><input type="radio" name="p15" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% filter(age &lt; 18 %in% highest_education == &quot;Primary&quot;)</code></span></label>
+      <label><input type="radio" name="p15" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% filter(age &lt; 18 | highest_education == &quot;Primary&quot;)</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. &lt;code&gt;|&lt;/code&gt; represents OR, so a row is retained when either condition is TRUE." data-incorrect="Because either condition is sufficient, use the vertical bar &lt;code&gt;|&lt;/code&gt; for OR."></div>
+</div>
+
+<div class="practice" data-answer="a">
+  <div class="practice-meta">
+    <span class="practice-title">Question 17</span>
+    <span class="topic-tag">Negation</span>
+  </div>
+  <p class="question-text">Which code drops respondents who live in Tsinga or Messa?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p16" value="a"><span class="choice-letter">A</span><span><code>yao %&gt;% filter(!(neighborhood %in% c(&quot;Tsinga&quot;, &quot;Messa&quot;)))</code></span></label>
+      <label><input type="radio" name="p16" value="b"><span class="choice-letter">B</span><span><code>yao %&gt;% filter(neighborhood %in% c(&quot;Tsinga&quot;, &quot;Messa&quot;))</code></span></label>
+      <label><input type="radio" name="p16" value="c"><span class="choice-letter">C</span><span><code>yao %&gt;% filter(!neighborhood == c(&quot;Tsinga&quot;, &quot;Messa&quot;))</code></span></label>
+      <label><input type="radio" name="p16" value="d"><span class="choice-letter">D</span><span><code>yao %&gt;% select(!(neighborhood %in% c(&quot;Tsinga&quot;, &quot;Messa&quot;)))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Negating the membership test with &lt;code&gt;!()&lt;/code&gt; keeps rows that are not in the specified neighborhoods." data-incorrect="The lesson pattern for “NOT in” is to negate a &lt;code&gt;%in%&lt;/code&gt; expression with &lt;code&gt;!()&lt;/code&gt;."></div>
+</div>
+
+<div class="practice" data-answer="c">
+  <div class="practice-meta">
+    <span class="practice-title">Question 18</span>
+    <span class="topic-tag">Missing values</span>
+  </div>
+  <p class="question-text">Which code keeps rows where <code>is_smoker</code> is missing?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p17" value="a"><span class="choice-letter">A</span><span><code>filter(is_smoker == NA)</code></span></label>
+      <label><input type="radio" name="p17" value="b"><span class="choice-letter">B</span><span><code>filter(is_smoker == &quot;NA&quot;)</code></span></label>
+      <label><input type="radio" name="p17" value="c"><span class="choice-letter">C</span><span><code>filter(is.na(is_smoker))</code></span></label>
+      <label><input type="radio" name="p17" value="d"><span class="choice-letter">D</span><span><code>filter(!is.na(is_smoker))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Missing values are identified with &lt;code&gt;is.na()&lt;/code&gt;, not with equality operators." data-incorrect="Use the dedicated &lt;code&gt;is.na()&lt;/code&gt; function to identify genuine missing values."></div>
+</div>
+
+<div class="practice" data-answer="d">
+  <div class="practice-meta">
+    <span class="practice-title">Question 19</span>
+    <span class="topic-tag">Missing values</span>
+  </div>
+  <p class="question-text">What does <code>yao_mini %&gt;% filter(!is.na(is_pregnant))</code> do?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p18" value="a"><span class="choice-letter">A</span><span>Keeps only rows where <code>is_pregnant</code> is missing</span></label>
+      <label><input type="radio" name="p18" value="b"><span class="choice-letter">B</span><span>Converts missing values to <code>FALSE</code></span></label>
+      <label><input type="radio" name="p18" value="c"><span class="choice-letter">C</span><span>Keeps every row, including missing values</span></label>
+      <label><input type="radio" name="p18" value="d"><span class="choice-letter">D</span><span>Drops rows where <code>is_pregnant</code> is missing</span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. Negating &lt;code&gt;is.na()&lt;/code&gt; retains rows with non-missing values and therefore drops the missing rows." data-incorrect="Read &lt;code&gt;!is.na(...)&lt;/code&gt; as “is not missing.” The filter keeps those rows."></div>
+</div>
+
+<div class="practice" data-answer="b">
+  <div class="practice-meta">
+    <span class="practice-title">Question 20</span>
+    <span class="topic-tag">Applied filtering</span>
+  </div>
+  <p class="question-text">You want to drop respondents with <code>respiration_frequency</code> under 20 while still retaining rows where respiration frequency is missing. Which condition does that?</p>
+  <div class="choice-set">
+      <label><input type="radio" name="p19" value="a"><span class="choice-letter">A</span><span><code>filter(respiration_frequency &gt;= 20)</code></span></label>
+      <label><input type="radio" name="p19" value="b"><span class="choice-letter">B</span><span><code>filter(respiration_frequency &gt;= 20 | is.na(respiration_frequency))</code></span></label>
+      <label><input type="radio" name="p19" value="c"><span class="choice-letter">C</span><span><code>filter(respiration_frequency &lt; 20 | is.na(respiration_frequency))</code></span></label>
+      <label><input type="radio" name="p19" value="d"><span class="choice-letter">D</span><span><code>filter(!is.na(respiration_frequency))</code></span></label>
+  </div>
+  <div class="question-actions">
+    <button type="button" class="check-button">Check answer</button>
+    <span class="question-status" aria-live="polite"></span>
+  </div>
+  <div class="practice-feedback" data-correct="Correct. This keeps values of 20 or more and explicitly preserves rows where the measurement is missing." data-incorrect="The lesson asks you to remove values under 20 without also losing missing observations. Keep values at least 20 OR values that are &lt;code&gt;NA&lt;/code&gt;."></div>
+</div>
+
+<section class="completion-panel">
+  <h2>Assessment result</h2>
+  <p>Your score updates each time you check a question. Reach the mastery standard to reveal the success code.</p>
+
+  <div class="score-row">
+    <div class="progress-track" aria-label="Quiz score progress">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="score-value" id="score-value">0 / 20</div>
+  </div>
+
+  <div class="score-details">
+    <span id="answered-progress">0 of 20 questions checked</span>
+    <span id="code-progress">Need at least 16 correct answers</span>
+  </div>
+
+  <div class="code-box" id="code-box">
+    <div class="code-label">Success code</div>
+    <div class="code-value" id="code-value"></div>
+    <div class="code-note">Keep this code. It confirms that you reached the 80% mastery standard for this assessment.</div>
+  </div>
+
+  <div style="margin-top:1rem;">
+    <button type="button" class="reset-button" id="reset-quiz">Reset quiz</button>
+  </div>
+</section>
+
+<section class="reinforce-panel">
+  <h2>Reinforce the two lessons</h2>
+  <p class="reinforce-intro">Use this compact reference after the quiz to consolidate the syntax patterns you should be able to recognize and apply without hesitation.</p>
+
+  <div class="reinforce-grid">
+    <div class="reinforce-card">
+      <h3>Selecting and renaming columns</h3>
+      <ul>
+        <li><code>select(age, sex)</code> keeps named columns.</li>
+        <li><code>select(age:occupation)</code> keeps a consecutive range.</li>
+        <li><code>select(!age)</code> excludes one column.</li>
+        <li><code>select(!c(age, sex))</code> excludes non-consecutive columns.</li>
+        <li><code>starts_with()</code>, <code>ends_with()</code>, and <code>contains()</code> select by name pattern.</li>
+        <li><code>select(starts_with(&quot;is_&quot;), everything())</code> reorders without dropping the remaining columns.</li>
+        <li><code>rename(patient_age = age)</code> follows <strong>new name = old name</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="reinforce-card">
+      <h3>Filtering rows</h3>
+      <ul>
+        <li><code>filter(sex == &quot;Male&quot;)</code> keeps rows meeting an equality condition.</li>
+        <li>Use <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>==</code>, and <code>!=</code> for relational tests.</li>
+        <li><code>%in%</code> is efficient when one variable may match several allowed values.</li>
+        <li><code>&amp;</code> means both conditions must be TRUE. <code>|</code> means either condition may be TRUE.</li>
+        <li><code>!()</code> negates a condition and is useful for “NOT in” logic.</li>
+        <li><code>is.na(x)</code> identifies missing values. <code>!is.na(x)</code> keeps non-missing values.</li>
+        <li>When needed, explicitly preserve missing rows in compound filtering conditions.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memory-rule">
+    <strong>Core mental model:</strong> use <code>select()</code> to decide which <em>variables</em> you keep, and use <code>filter()</code> to decide which <em>observations</em> you keep.
+  </div>
+</section>
+
+<p class="footer-note">SI Analytics | Data Manipulations in R | Focused assessment: selecting columns and filtering rows</p>
+
+</div>
+
+<script>
+const COMPLETION_CODE = "SIA-SF20-MASTERY";
+const COMPLETION_REQUIRED = 16;
+
+function updateCompletion() {
+  const cards = [...document.querySelectorAll(".practice")];
+  const correct = cards.filter(card => card.classList.contains("is-correct")).length;
+  const answered = cards.filter(card => card.dataset.checked === "true").length;
+  const total = cards.length;
+  const percent = total ? Math.round((correct / total) * 100) : 0;
+
+  const scoreValue = document.getElementById("score-value");
+  const answeredProgress = document.getElementById("answered-progress");
+  const codeProgress = document.getElementById("code-progress");
+  const progressFill = document.getElementById("progress-fill");
+  const codeBox = document.getElementById("code-box");
+  const codeValue = document.getElementById("code-value");
+
+  if (scoreValue) scoreValue.textContent = correct + " / " + total;
+  if (answeredProgress) answeredProgress.textContent = answered + " of " + total + " questions checked";
+  if (progressFill) progressFill.style.width = percent + "%";
+
+  if (correct >= COMPLETION_REQUIRED) {
+    if (codeProgress) codeProgress.textContent = "Mastery standard achieved";
+    if (codeValue) codeValue.textContent = COMPLETION_CODE;
+    if (codeBox) codeBox.style.display = "block";
+  } else {
+    const remaining = COMPLETION_REQUIRED - correct;
+    if (codeProgress) codeProgress.textContent = "Need " + remaining + " more correct answer" + (remaining === 1 ? "" : "s");
+    if (codeBox) codeBox.style.display = "none";
+  }
+}
+
+document.querySelectorAll(".practice").forEach((card) => {
+  const button = card.querySelector(".check-button");
+  const feedback = card.querySelector(".practice-feedback");
+  const status = card.querySelector(".question-status");
+  const answer = card.dataset.answer;
+
+  button.addEventListener("click", () => {
+    const selected = card.querySelector("input[type='radio']:checked");
+
+    card.classList.remove("is-correct", "is-incorrect");
+    card.querySelectorAll("label").forEach((label) => {
+      label.classList.remove("correct-choice", "incorrect-choice");
+    });
+
+    if (!selected) {
+      card.dataset.checked = "false";
+      card.classList.add("is-incorrect");
+      feedback.innerHTML = "Choose an answer first, then check it.";
+      if (status) status.textContent = "No option selected";
+      updateCompletion();
+      return;
+    }
+
+    card.dataset.checked = "true";
+    const selectedLabel = selected.closest("label");
+    const correctInput = card.querySelector('input[value="' + answer + '"]');
+    const correctLabel = correctInput ? correctInput.closest("label") : null;
+
+    if (selected.value === answer) {
+      card.classList.add("is-correct");
+      selectedLabel.classList.add("correct-choice");
+      feedback.innerHTML = feedback.dataset.correct;
+      if (status) status.textContent = "Correct";
+    } else {
+      card.classList.add("is-incorrect");
+      selectedLabel.classList.add("incorrect-choice");
+      if (correctLabel) correctLabel.classList.add("correct-choice");
+      feedback.innerHTML = feedback.dataset.incorrect;
+      if (status) status.textContent = "Review and try again";
+    }
+
+    updateCompletion();
+  });
+});
+
+document.getElementById("reset-quiz").addEventListener("click", () => {
+  document.querySelectorAll(".practice").forEach((card) => {
+    card.classList.remove("is-correct", "is-incorrect");
+    card.dataset.checked = "false";
+    card.querySelectorAll("input[type='radio']").forEach(input => input.checked = false);
+    card.querySelectorAll("label").forEach(label => {
+      label.classList.remove("correct-choice", "incorrect-choice");
+    });
+    const feedback = card.querySelector(".practice-feedback");
+    const status = card.querySelector(".question-status");
+    if (feedback) {
+      feedback.style.display = "";
+      feedback.innerHTML = "";
+    }
+    if (status) status.textContent = "";
+  });
+  updateCompletion();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+updateCompletion();
+</script>
+```
