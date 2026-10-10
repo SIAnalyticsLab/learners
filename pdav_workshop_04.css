@@ -1,0 +1,15 @@
+:root { --si-navy:#081b4d;--si-teal:#008f9a;--si-soft:#eff8f9; }
+body { font-size: 1rem; line-height:1.72; color:#26374a; }
+h1,h2,h3 { color:var(--si-navy); font-weight:700; letter-spacing:-.02em; }
+h1.title {font-size:2.45rem;line-height:1.17;max-width:850px}
+p.subtitle {color:#087d88;font-weight:600}
+#quarto-header, #quarto-content {color:#26374a}
+.quarto-title-block {border-top:5px solid var(--si-teal);padding-top:24px}
+.callout-note {border-left-color:var(--si-teal)!important}
+.callout-tip {border-left-color:#0ba4a8!important}
+pre.sourceCode {border-radius:9px;border:1px solid #dde7ed;background:#f7fafc}
+code {color:#006f81}
+a {color:#007d89}
+#TOC a {font-size:.93rem}
+hr {border-color:#dce8ec}
+blockquote {border-left:3px solid var(--si-teal)}

@@ -1,0 +1,4 @@
+[1,"==> quarto preview pdav_workshop_04.qmd --to html --no-watch-inputs --no-browse\n\n"]
+[1,"pandoc \n  to: html\n  output-file: pdav_workshop_04.html\n  standalone: true\n  embed-resources: true\n  section-divs: true\n  html-math-method: mathjax\n  wrap: none\n  default-image-extension: png\n  css:\n    - si-analytics.css\n  toc: true\n  toc-depth: 3\n  number-sections: false\n  variables: {}\n  \nmetadata\n  document-css: false\n  link-citations: true\n  date-format: long\n  lang: en\n  engines:\n    - path: C:\\PROGRA~1\\RStudio\\RESOUR~1\\app\\bin\\quarto\\share\\extension-subtrees\\julia-engine\\_extensions\\julia-engine\\julia-engine.js\n  title: PDAV Workshop 4 | Data Subsetting with Pandas\n  author: SI Analytics\n  theme: cosmo\n  toc-location: left\n  code-copy: true\n  smooth-scroll: true\n  \n"]
+[1,"Output created: pdav_workshop_04.html\n\nWatching files for changes\n"]
+[1,"Browse at http://localhost:6489/\nListening on http://127.0.0.1:6489/\n"]

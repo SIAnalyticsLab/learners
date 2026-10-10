@@ -1,0 +1,411 @@
+---
+title: "Python Workshop 4 | Data Subsetting with Pandas"
+subtitle: "Guided assignment · Google Colab · Lending Club loan data"
+author: "Strategic Insights and Analytics (SI Analytics)"
+date: "October 2026"
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    css: si-analytics-workshop.css
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    number-sections: false
+    code-copy: true
+    code-tools: false
+    code-overflow: wrap
+    smooth-scroll: true
+    link-external-newwindow: true
+---
+
+::: {.callout-note title="How to use these instructions"}
+**This document is rendered to HTML in RStudio using Quarto; the learners execute Python separately in Google Colab.** The Python code blocks in this instructional document are displayed for reference; they are **not executed** when the Quarto document is rendered from RStudio. They are ordinary syntax-highlighted code blocks, not executable Python chunks. Copy the setup examples into your own Colab notebook, then write your **own solutions** to the exercises. The assignment questions are intentionally unsolved.
+:::
+
+# Introduction
+
+In this workshop, you will act as a data analyst preparing **five focused data extracts for another analyst or stakeholder**. You will work with a real-world Lending Club dataset and use pandas to select columns, filter rows, combine logical conditions, rename fields, and export your results.
+
+Your goal is not merely to obtain five CSV files. By the end, you should be able to explain **why each subset contains the right records and variables**, verify that its logic works, and make your workflow reproducible.
+
+## Learning outcomes
+
+By the end of the exercise, you should be able to:
+
+1. Import a CSV dataset from an external GitHub source into Google Colab.
+2. Inspect a DataFrame and use its data dictionary to interpret variables.
+3. Select, remove, and rename columns using pandas.
+4. Filter records using numerical comparisons and multiple logical conditions.
+5. Distinguish **OR** conditions (any criterion) from **AND** conditions (all criteria).
+6. Identify columns by name patterns and export separate, well-labelled datasets.
+7. Validate each extract before submitting your notebook.
+
+::: {.callout-tip title="Before you begin"}
+Work sequentially. Keep the DataFrame name `loans_data` and the requested subset names exactly as written. If your code produces an error, read the message, consult the hints, and try again. Record questions to discuss during the live workshop.
+:::
+
+# Part 1. Set up Google Colab
+
+## Step 1. Create your notebook
+
+1. Open **[Google Colab](https://colab.research.google.com/)** and sign in with your Google account.
+2. Select **New Notebook**.
+3. Rename the notebook **`python_workshop_04_subsetting.ipynb`**.
+4. Confirm you have connected to a Python runtime.
+5. Add **text cells** for section headings and **code cells** for your work. Use the same exercise titles as this guide.
+
+Google Colab runs Python in your browser. You do **not** need to set up a local virtual environment or install VS Code for this assignment.
+
+## Step 2. Import pandas
+
+Pandas is typically available in Google Colab. Run the following in a code cell:
+
+```python
+import pandas as pd
+
+# Show all columns when displaying a DataFrame
+pd.set_option("display.max_columns", None)
+```
+
+**Check your understanding:** What does `import pandas as pd` accomplish? Why might showing all columns be helpful during data inspection?
+
+# Part 2. Retrieve and inspect the data
+
+## Step 3. Import the CSV directly from GitHub
+
+The **Lending Club** dataset records information about loans issued through a peer-to-peer lending platform. Each row represents a loan, and its columns describe loan, borrower, and credit characteristics.
+
+- [View the CSV file in the SI Analytics GitHub repository](https://github.com/SIAnalyticsLab/pdav_q1-2026_materials/blob/main/week_05_workshop/data/loans_full_schema.csv)
+- [Consult the Lending Club data dictionary](https://vincentarelbundock.github.io/Rdatasets/doc/openintro/loans_full_schema.html)
+
+Use the **raw file URL** below, not GitHub's normal `blob` webpage address:
+
+```python
+# Location of the raw CSV file
+data_url = (
+    "https://raw.githubusercontent.com/"
+    "SIAnalyticsLab/pdav_q1-2026_materials/"
+    "main/week_05_workshop/data/"
+    "loans_full_schema.csv"
+)
+
+# Import the dataset
+loans_data = pd.read_csv(data_url)
+
+# Preview the first five rows
+loans_data.head()
+```
+
+::: {.callout-important title="A note about file links"}
+`pd.read_csv()` needs a link that returns CSV data. A GitHub address containing `/blob/` displays a webpage rather than the raw CSV file. If your import fails, check the URL, runtime connection, and internet access before proceeding.
+:::
+
+## Step 4. Explore the structure
+
+Run each statement in your Colab notebook. Write a short note describing what you learn.
+
+**Inspect the first five records**
+
+```python
+loans_data.head()
+```
+
+**Identify the number of rows and columns**
+
+```python
+loans_data.shape
+```
+
+**Review variable names**
+
+```python
+loans_data.columns.tolist()
+```
+
+**Inspect data types and missing-value counts**
+
+```python
+loans_data.info()
+```
+
+**Summarize numeric variables**
+
+```python
+loans_data.describe()
+```
+
+### Initial inspection questions
+
+Record your answers in a **text cell** in the notebook:
+
+1. How many observations (rows) are in the dataset?
+2. How many variables (columns) are available?
+3. Identify two numeric variables and two categorical variables.
+4. Name one variable with missing values, if any are present.
+5. Why is it important to consult a data dictionary before applying filters?
+
+## Step 5. Explore the DataFrame visually
+
+Google Colab can display DataFrames interactively:
+
+```python
+from google.colab import data_table
+
+data_table.DataTable(loans_data)
+```
+
+You can also inspect it in the standard notebook display:
+
+```python
+display(loans_data.head())
+```
+
+Use the viewer to examine column names and a sample of records. **Do not edit the dataset manually** in the viewer; perform transformations through Python code.
+
+## Step 6. Remove the unnecessary `rownames` column
+
+The source file may include a `rownames` column originating from the source dataset's row indexing. This is not a substantive loan variable.
+
+**Your task:** Check whether `rownames` exists and, if it does, remove it from `loans_data`. Preserve the remaining columns and verify that the change was successful.
+
+**Hints:** Review the `columns` attribute and pandas' `drop()` method. Consider how you would prevent an error if the column were absent.
+
+```python
+# Your code here: check for and remove 'rownames'
+
+# Your code here: verify the result
+```
+
+::: {.callout-note title="Alternative: Upload a local CSV" collapse="true"}
+Direct import from GitHub is the **preferred method** for this assignment. If you cannot access the raw URL, download the CSV from the repository and upload it to your current Colab session:
+
+```python
+from google.colab import files
+import io
+
+uploaded = files.upload()
+
+# This assumes you selected the file named below
+loans_data = pd.read_csv(
+    io.BytesIO(uploaded["loans_full_schema.csv"])
+)
+
+loans_data.head()
+```
+
+Colab's local runtime storage is temporary. You may need to upload the file again after a session reset. If you use this alternative, continue from **Step 4** and complete the same exercises.
+:::
+
+# Part 3. Prepare your output folder
+
+For every subset, you must create a pandas DataFrame **and** export it as an individual CSV in a folder called `outputs`.
+
+Google Colab's working directory is typically `/content`. Create the output folder **before** exporting files:
+
+```python
+from pathlib import Path
+
+output_dir = Path("outputs")
+output_dir.mkdir(parents=True, exist_ok=True)
+```
+
+The following is a **generic export example**, not a solution to any exercise:
+
+```python
+# Replace example_df with the DataFrame you want to export
+# and replace example_extract.csv with an informative filename.
+example_df.to_csv(output_dir / "example_extract.csv", index=False)
+```
+
+**Important:** The illustrative `example_df` does not exist unless you create it. Do not run this example unchanged. In each task, export **your own completed subset** and use `index=False` so the row index is not added as an unnecessary column.
+
+After each exercise, check the number of rows and columns, preview the output, and confirm the file was written. Your exported CSV files will be stored in Colab's temporary session unless you download or save them elsewhere.
+
+# Part 4. Create and export five subsets
+
+For **each** exercise:
+
+1. Read the requested business rule carefully.
+2. Consult the [data dictionary](https://vincentarelbundock.github.io/Rdatasets/doc/openintro/loans_full_schema.html) and inspect the actual variable names.
+3. Write your own pandas code to generate the subset.
+4. Assign it the **exact DataFrame name** provided.
+5. Validate the result, including the requested columns and/or filtering conditions.
+6. Export it to a distinct `.csv` file in `outputs`.
+
+The hints identify useful pandas operations but **do not provide the completed solution**.
+
+## Subset 1. Demographic and loan information
+
+**Scenario:** A colleague needs a compact extract of borrower employment, location, housing, and loan characteristics.
+
+Create a DataFrame called **`demog_loan_info`** containing **only**:
+
+- Employment title
+- Employment length
+- State
+- Homeownership status
+- Loan amount
+- Loan term
+- Interest rate
+
+Then rename the `term` column to **`loan_term_months`** and export the result to CSV.
+
+**Guidance:** Identify the seven source column names using the data dictionary. Review selection with a list of column names, then pandas' `rename()` method. Preserve the existing records without adding a row filter.
+
+**Self-check:** Does the resulting DataFrame contain exactly seven requested variables? Is the renamed variable present, and is the original `term` name absent?
+
+```python
+# Your code here: select the specified columns
+
+# Your code here: rename 'term' to 'loan_term_months'
+
+# Your code here: validate and export demog_loan_info
+```
+
+## Subset 2. Credit-related variables
+
+**Scenario:** A credit analyst requests an extract of fields whose names contain the word `credit`.
+
+Create a DataFrame named **`credit_vars`**, selecting columns whose names contain **`credit`**. Use the pandas **`filter()`** method with its **`regex`** argument for matching column names, and export the subset.
+
+**Guidance:** `DataFrame.filter(regex=...)` selects **columns by label**. It is different from filtering borrower records by a condition. Review which columns match the word `credit` and whether case matters.
+
+**Self-check:** Do all selected column names meet the naming rule? Does the result retain the original number of loan records?
+
+```python
+# Your code here: select columns matching 'credit'
+
+# Your code here: validate and export credit_vars
+```
+
+## Subset 3. High-income borrowers
+
+**Scenario:** A stakeholder wants to examine borrowers who report a high annual income.
+
+Create a DataFrame named **`high_income`** containing **only loans with annual income greater than $100,000**. Retain **all existing columns**, then export your extract.
+
+**Guidance:** Identify the annual-income variable and use a **strict greater-than** comparison (`>`), not greater-than-or-equal-to (`>=`). Review boolean indexing or `.loc[]` for selecting rows.
+
+**Self-check:** Are all retained annual incomes strictly above 100,000? Did you keep the original set of columns?
+
+```python
+# Your code here: filter records using annual income > 100000
+
+# Your code here: validate and export high_income
+```
+
+## Subset 4. High-risk loans
+
+**Scenario:** A risk team needs to identify loans requiring additional review.
+
+Create a DataFrame named **`high_risk`** containing loans that meet **ANY ONE OR MORE** of these criteria:
+
+- Interest rate is **greater than 15%**.
+- Individual debt-to-income ratio is **greater than 30**.
+- Borrower has had **at least one delinquency in the past two years**.
+
+Retain all columns and export the subset.
+
+**Guidance:** Identify the corresponding fields in the data dictionary. Use **OR logic** to include a loan when *any* condition is true. In pandas, combine parenthesized boolean comparisons with `|`. Use the **individual** debt-to-income measure, not the joint measure. Check the units of the interest-rate variable before comparing it with 15.
+
+**Self-check:** Would a loan qualify if **only one** criterion is true? Are records with all three criteria false excluded? Explain your interpretation of missing values in these fields.
+
+```python
+# Your code here: define the three risk conditions
+
+# Your code here: combine conditions using OR logic
+
+# Your code here: validate and export high_risk
+```
+
+## Subset 5. Prime borrowers
+
+**Scenario:** A lending team wants an extract of borrowers meeting **all** specified prime criteria.
+
+Create a DataFrame named **`prime`** containing records that satisfy **EVERY** condition below:
+
+- Loan grade is **A or B**.
+- Individual debt-to-income ratio is **less than 20**.
+- Borrower has had **no delinquencies in the past two years**.
+
+Retain all columns and export the subset.
+
+**Guidance:** Use membership testing, such as pandas' `.isin()`, for grades. Combine the conditions using **AND logic**, expressed with `&` in pandas. Put each comparison in parentheses. Do not confuse “no delinquencies” with a missing delinquency count.
+
+**Self-check:** Can any retained record violate one of the three rules? How does the inclusion logic differ from Subset 4?
+
+```python
+# Your code here: identify A/B grades and other eligibility criteria
+
+# Your code here: combine conditions using AND logic
+
+# Your code here: validate and export prime
+```
+
+# Part 5. Validate your work
+
+**Do not skip validation.** Before considering your exercise complete, inspect all five DataFrames and their exported files.
+
+Use these questions as a checklist:
+
+- [ ] Did you create `demog_loan_info`, `credit_vars`, `high_income`, `high_risk`, and `prime`?
+- [ ] Does `demog_loan_info` have exactly the seven requested fields and the corrected term label?
+- [ ] Did `credit_vars` select column names using `filter(regex=...)`?
+- [ ] Does `high_income` use `>` rather than `>=`?
+- [ ] Does `high_risk` use **OR** conditions and the individual debt-to-income field?
+- [ ] Does `prime` use **AND** conditions and include only grades A or B?
+- [ ] Did you inspect any relevant missing data before interpreting comparisons?
+- [ ] Did you export five distinct CSV files into `outputs`, without row indices?
+- [ ] Can your notebook run from the first cell to the last without relying on objects from a previous session?
+
+::: {.callout-tip title="Reflect before the workshop"}
+In a short notebook text cell, explain the difference between **column selection**, **row filtering**, **OR logic**, and **AND logic**. Give one example from your own work for each. Also identify one coding error you encountered and how you resolved it.
+:::
+
+# Optional challenge. Export all subsets to Excel
+
+For additional practice, export the **five completed subsets** to **one Excel workbook**, placing each extract on a separate worksheet. Use pandas' `ExcelWriter()`.
+
+Below is an unrelated **illustration** using pandas' built-in data structure. It shows the export pattern, **not** the Lending Club assignment solution:
+
+```python
+# General demonstration: exporting unrelated example DataFrames
+example_one = pd.DataFrame({"item": ["A", "B"]})
+example_two = pd.DataFrame({"value": [10, 20]})
+
+with pd.ExcelWriter(output_dir / "example_workbook.xlsx") as writer:
+    example_one.to_excel(writer, sheet_name="Example_1", index=False)
+    example_two.to_excel(writer, sheet_name="Example_2", index=False)
+```
+
+**Your challenge:** Adapt the pattern to export **your five extracts** into a workbook named `lending_club_subsets.xlsx`.
+
+**Guidance:** Each worksheet needs a unique, meaningful name. If the Excel engine is unavailable, Colab may ask you to install `openpyxl`. Check the resulting workbook and worksheet names before finishing.
+
+```python
+# Your code here: export all five completed subsets
+# as five sheets in a single Excel workbook
+```
+
+# Submission instructions
+
+Your work must be completed in **Google Colab**. The Quarto HTML page is your **assignment guide**, not the file you should edit to submit your answers.
+
+1. **Save your completed notebook** as `python_workshop_04_subsetting.ipynb`.
+2. Ensure it includes your code for setup, importing, inspecting, creating all five subsets, validating, and exporting to CSV.
+3. Include short text-cell responses to the initial inspection questions and the final reflection prompt.
+4. Use **Runtime → Restart session and run all** (or equivalent) to confirm that your notebook executes from start to finish. If your Colab interface uses a different label, restart the runtime and run the cells in order.
+5. **Submit the completed `.ipynb` notebook** through the designated learning-portal assignment submission area. You do **not** need to upload the five CSV outputs unless your instructor separately requests them. The optional Excel workbook is also not required for submission.
+
+::: {.callout-important title="What will be assessed"}
+Your submission will be assessed for **correct selection and filtering logic, use of the requested pandas methods, consistency of variable and DataFrame names, appropriate validation, reproducibility, and readable code**. Completing the optional Excel challenge is encouraged but is not required.
+:::
+
+**Need assistance?** Review the lesson materials, the dataset dictionary, and any relevant error messages before contacting the SI Analytics training team. Bring unresolved questions to the technical help session or live workshop.
+
+---
+
+*SI Analytics | Data → Evidence → Insight → Action*
+
+[SI Analytics Website](https://www.sianalytics.org) · [Learning Portal](https://www.sianalytics.org/portal/auth)

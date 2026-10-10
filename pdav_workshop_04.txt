@@ -1,0 +1,8 @@
+SI Analytics Python Workshop 4 | Render from RStudio
+
+1. Keep the .qmd and .css files together in the same folder.
+2. Open the .qmd in RStudio.
+3. Click Render, or run in the RStudio Terminal: quarto render python_workshop_04_subsetting_pandas.qmd --to html
+4. Share the resulting HTML file with learners.
+
+All Python examples use plain ```python fenced code blocks, rather than executable ```{python} Quarto chunks. Therefore no Python, reticulate, or Google Colab connection is needed to render the instructional HTML. Learners complete the exercises in Google Colab and submit their .ipynb notebook.
