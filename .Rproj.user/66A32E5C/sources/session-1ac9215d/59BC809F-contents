@@ -1,0 +1,463 @@
+---
+title: "PDAV Workshop 5 | From Wide Data to Analytical Insight"
+author: "SI Analytics"
+lang: en
+execute:
+  eval: false
+  echo: true
+  warning: false
+  message: false
+  error: false
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    css: si-analytics.css
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    number-sections: false
+    code-copy: true
+    code-overflow: wrap
+    smooth-scroll: true
+    link-external-newwindow: true
+    anchor-sections: true
+---
+
+# Introduction
+
+In this workshop, you will act as a data analyst and  work with historical life expectancy data across countries, reshape it, investigate country-level trends, develop reusable Python functions, and produce a comparative analytical extract.
+
+
+## Learning objectives
+
+By the end of the workshop, you should be able to:
+
+1. Distinguish **wide** and **long** data layouts and explain when each is useful.
+2. Transform wide data to long data with `pd.melt()` and long data back to wide data with `.pivot()`.
+3. Filter a tidy dataset by **country**, **year**, and multiple criteria.
+4. Define and call functions with `def`, arguments, return values, and **default parameter values**.
+5. Write `if`, `elif`, and `else` statements to classify life expectancy values.
+6. Apply a function to a pandas column, verify results, and produce an analysis-ready output.
+7. Validate reshaping operations and export reproducible results.
+
+::: {.callout-note title="Your analytical role"}
+You are supporting a global evidence team that wants to compare historical life expectancy across countries and years. Your responsibility is to make the dataset **tidy, interpretable, and reusable**, then prepare extracts and a categorization method the team can use consistently. You are not being asked to infer why countries differ or to make causal claims.
+:::
+
+# Part 1. Prepare your Colab notebook
+
+## Step 1. Create your notebook
+
+1. Open [Google Colab](https://colab.research.google.com/) and sign in.
+2. Create a new notebook named **`python_workshop_05_reshaping_functions.ipynb`**.
+3. Connect to a Python runtime.
+4. Add **text cells** with the section headings used in this guide and **code cells** for your work.
+5. Save your work regularly. You do not need to create a local virtual environment or install Python in RStudio.
+
+## Step 2. Import pandas and load the dataset
+
+Google Colab normally includes pandas. Run the following in a Colab code cell.
+
+```python
+import pandas as pd
+
+pd.set_option("display.max_columns", None)
+```
+
+We will work with the life expectancy dataset hosted in SI Analytics' GitHub repository.
+
+- [View or download `lex.csv` on GitHub](https://github.com/SIAnalyticsLab/30daychallengeguide/blob/main/lex.csv)
+- [Open the raw CSV dataset](https://raw.githubusercontent.com/SIAnalyticsLab/30daychallengeguide/refs/heads/main/lex.csv)
+
+```python
+# Dataset location (raw CSV, not the GitHub preview page)
+data_url = (
+    "https://raw.githubusercontent.com/"
+    "SIAnalyticsLab/30daychallengeguide/"
+    "refs/heads/main/lex.csv"
+)
+
+lex_wide = pd.read_csv(data_url)
+lex_wide.head()
+```
+
+::: {.callout-tip title="If the import fails"}
+Check your Colab runtime and the URL. The standard `github.com/.../blob/...` page is not itself a CSV endpoint. You may also download `lex.csv` using the link above, then upload it in the **Files** pane in Colab and read it from `/content/lex.csv`. The uploaded file may disappear when the runtime resets.
+:::
+
+## Step 3. Inspect the original structure
+
+Run these exploration commands and inspect the output. The file is expected to contain a `country` column and many year-labelled columns, with each year recording life expectancy for that country.
+
+```python
+lex_wide.head()
+lex_wide.shape
+lex_wide.columns.tolist()
+lex_wide.info()
+lex_wide.isna().sum().head(10)
+```
+
+**Record short answers in a Colab text cell:**
+
+1. How many countries/rows and columns appear in the file?
+2. What does one **row** represent? What does one **year column** represent?
+3. Which column identifies a country? Are the year labels stored as column names or values?
+4. Find at least two years present in the data. Are there missing observations?
+5. Is this dataset presently **wide** or **long**? Explain your reasoning.
+
+# Part 2. Understand and reshape the data
+
+## Step 4. Understand wide versus long
+
+The following is an **illustration only**, not the actual life expectancy file.
+
+| Country | 2010 | 2020 |
+|:--|--:|--:|
+| Country A | 65 | 70 |
+| Country B | 72 | 76 |
+
+This is **wide**: each year is a separate column. The same information in **long** format would look like this:
+
+| Country | Year | Life expectancy |
+|:--|--:|--:|
+| Country A | 2010 | 65 |
+| Country A | 2020 | 70 |
+| Country B | 2010 | 72 |
+| Country B | 2020 | 76 |
+
+Long data are often easier to filter, group, plot, and summarize across time. Wide data can be useful for reports and side-by-side comparisons.
+
+::: {.callout-note title="Method spotlight: `pd.melt()`"}
+`pd.melt()` reshapes selected **column headers into row values**. Consider the purpose of `id_vars` (columns that identify a unit), `value_vars` (columns to unpivot), `var_name` (new column containing former headers), and `value_name` (new column containing measurements). Consult the [pandas documentation](https://pandas.pydata.org/docs/reference/api/pandas.melt.html) as needed.
+:::
+
+## Exercise 1. Convert the life expectancy dataset to long format
+
+Create a new DataFrame called **`lex_long`** with exactly these three variables:
+
+- `country`: country name
+- `year`: year of observation
+- `life_expectancy`: life expectancy value
+
+**Requirements**
+
+1. Use `pd.melt()` to transform `lex_wide` into `lex_long`.
+2. Retain `country` as the identifier and unpivot the year columns.
+3. Convert `year` from a column-label string to a suitable **integer** type.
+4. Check the data type of `life_expectancy` and make it numeric if necessary. Do **not** silently replace missing life expectancy values with zero.
+5. Inspect the first 10 rows, dimensions, data types, and missing values.
+
+**Hints:** Review `id_vars`, `var_name`, `value_name`, `pd.to_numeric()`, and `.astype()`. Keep the original `lex_wide` unchanged so you can compare the datasets later.
+
+```python
+# Your code here: create lex_long with pd.melt()
+
+# Your code here: convert year to integer and check value types
+
+# Your code here: inspect and validate the reshaped DataFrame
+```
+
+**Questions:** Why should the country appear more than once in `lex_long`? How is a country-year observation different from a country observation? What would you expect to happen to the number of rows after reshaping?
+
+## Exercise 2. Filter the tidy dataset
+
+The evidence team now wants smaller extracts for specific questions. Use **`lex_long`** for all parts. Do not filter `lex_wide` directly.
+
+**2A. One country across time.** Choose one country that is actually present in the data. Create **`country_history`** containing every available year for that country. Sort by year.
+
+**2B. One year across countries.** Choose a year that exists in the data, preferably **2020 if available**. Create **`year_snapshot`** containing all countries for that year. Sort the resulting dataset by life expectancy, highest first.
+
+**2C. Multiple criteria.** Create **`recent_high_lex`** containing observations from **2010 onward** with life expectancy **at least 75 years**. Keep all three columns.
+
+**2D. Compare selected countries.** Choose **three countries** present in the dataset and create **`comparison_countries`** containing only their observations from **2000 onward**. Sort by country and year.
+
+**Guidance:** Use boolean comparisons, `.isin()`, `.loc[]` or bracket indexing, and `.sort_values()`. In pandas, use `&` to combine conditions requiring **both** rules, with each comparison in parentheses. Think carefully about missing values and year data types.
+
+```python
+# Your code here: country_history
+
+# Your code here: year_snapshot
+
+# Your code here: recent_high_lex
+
+# Your code here: comparison_countries
+```
+
+**Self-check:** Does `country_history` include only one country? Does `year_snapshot` include only one year? Can any row in `recent_high_lex` violate either filter condition?
+
+## Exercise 3. Convert long data back to wide format
+
+Use **`lex_long`** to reconstruct the original country-by-year layout. Call the result **`lex_wide_rebuilt`**.
+
+**Requirements**
+
+1. Use pandas' **`.pivot()`** method, specifying the country, year, and value roles.
+2. Compare the shape and column labels of the rebuilt table with `lex_wide`.
+3. Explain why the rebuilt table may look different at first (for example, country names as the index or years as numeric columns).
+4. Check whether any **country-year pairs** are duplicated in `lex_long` before pivoting. If duplicates occur, investigate rather than silently aggregating them.
+5. Describe how you would verify that the values match after reshaping wide → long → wide.
+
+**Hints:** Read about `.pivot(index=..., columns=..., values=...)`, `.reset_index()`, and `.duplicated()`. `.pivot()` requires a unique value for each index/column combination. `pivot_table()` performs aggregation and is **not** an interchangeable substitute here.
+
+```python
+# Your code here: check country-year uniqueness
+
+# Your code here: create lex_wide_rebuilt using pivot()
+
+# Your code here: compare the reconstructed layout with lex_wide
+```
+
+::: {.callout-important title="Validation matters"}
+A successful `melt()` or `pivot()` call is not enough. Confirm that the **unit of observation**, number of records, country-year uniqueness, missing-value treatment, and measurement values make sense. Do not interpret reshaped data until you have checked its integrity.
+:::
+
+# Part 3. Write reusable functions
+
+## Step 5. Understand function structure
+
+A Python function is defined with `def`. It can accept **parameters** (inputs), process them, and use `return` to give a result back to the caller.
+
+Study this **unrelated demonstration**:
+
+```python
+# Demonstration only: a function with a default argument
+def add_service_fee(amount, fee_rate=0.05):
+    return amount * (1 + fee_rate)
+
+add_service_fee(100)         # Uses the default fee_rate
+add_service_fee(100, 0.10)   # Overrides the default
+```
+
+In an `if` / `elif` / `else` chain, Python evaluates conditions in order and returns the result from the first matching branch when that branch includes a `return` statement. **Indentation matters.**
+
+## Exercise 4. Warm-up: write a BMI function
+
+Define a function **`calc_bmi(weight, height)`** that calculates body mass index:
+
+\[
+\mathrm{BMI}=\frac{\mathrm{weight\ (kg)}}{\left(\mathrm{height\ (m)}\right)^2}
+\]
+
+**Requirements**
+
+1. Accept `weight` and `height` as arguments.
+2. Return BMI rather than printing the result.
+3. Make it work with a single pair of numeric inputs **and** with pandas Series supplied as arguments.
+4. Decide how you should handle zero or negative heights. Explain your choice in a comment or text cell.
+
+**Write the function yourself:**
+
+```python
+# Your code here: define calc_bmi(weight, height)
+```
+
+Then run the following **test data**. This is a usage example, not a definition of the function:
+
+```python
+bmi_df = pd.DataFrame({
+    "Weight": [70, 80, 100],  # kilograms
+    "Height": [1.7, 1.8, 1.2]  # metres
+})
+
+# Run only after you have defined calc_bmi above
+bmi_df["BMI"] = calc_bmi(bmi_df["Weight"], bmi_df["Height"])
+bmi_df
+```
+
+**Check your understanding:** How does Python know which input goes into `weight` and which goes into `height`? Why is returning a result more useful than printing it when you want to create a new DataFrame column?
+
+## Exercise 5. Create a life expectancy classification function
+
+Your team wants a consistent, interpretable label for each life expectancy measurement.
+
+Define a function named **`classify_life_expectancy`** with these parameters:
+
+- `value`: the life expectancy value to classify
+- `low_cutoff=60`: default lower threshold
+- `high_cutoff=75`: default upper threshold
+
+Implement the following **assignment-specific categories** (these are teaching thresholds, **not internationally standardized health classifications**):
+
+| Rule | Return value |
+|:--|:--|
+| `value` is missing, not numeric, negative, or otherwise invalid | `"Invalid or missing"` |
+| `0 ≤ value < low_cutoff` | `"Lower"` |
+| `low_cutoff ≤ value < high_cutoff` | `"Middle"` |
+| `value ≥ high_cutoff` | `"Higher"` |
+
+**Requirements**
+
+1. Use `def`, `if`, `elif`, and `else` somewhere within your solution.
+2. Use **`return`**, not `print`, to produce the category.
+3. Validate that `low_cutoff` is smaller than `high_cutoff` and decide how the function should respond if it is not.
+4. Handle missing values explicitly, without treating them as zero.
+5. For this task, classify one scalar value at a time; later you will apply the function to each row of the DataFrame.
+6. Demonstrate both the default thresholds and a **custom** pair of thresholds when calling the function.
+
+**Hints:** Look up `pd.isna()`, scalar type checks, comparison operators, and the order of branches. Handle invalid inputs *before* comparing them with numerical thresholds. Avoid assigning an analytical category to unavailable information.
+
+```python
+# Your code here: define classify_life_expectancy()
+# Parameters: value, low_cutoff=60, high_cutoff=75
+# Include invalid-value handling, conditional branches, and a return value
+```
+
+**Test your function** using these inputs. Add the appropriate function calls and record the expected outcome before checking your results.
+
+| Test input | What the test should investigate |
+|:--|:--|
+| `55` | Below the lower default cutoff |
+| `60` | Exactly at the lower default cutoff |
+| `74.9` | Just below the higher default cutoff |
+| `75` | Exactly at the higher default cutoff |
+| `None` | Missing value |
+| `-4` | Invalid negative value |
+| `70` with custom cutoffs `65` and `80` | Overriding the defaults |
+
+```python
+# Your code here: test every case and compare actual vs expected outputs
+```
+
+**Reflection:** Which `if` / `elif` / `else` branch handles a value exactly equal to a threshold? What would go wrong if you checked the higher range before handling invalid inputs? Why are default arguments useful?
+
+## Exercise 6. Apply your function to real data
+
+Use your finished function to add a classification column to a **copy** of `lex_long`.
+
+**Requirements**
+
+1. Create a DataFrame named **`lex_classified`** without changing `lex_long`.
+2. Add a new column named **`life_expectancy_category`** by applying `classify_life_expectancy` to `life_expectancy` values.
+3. Verify that the number of rows stays the same.
+4. Show the distribution of values in `life_expectancy_category`, including the invalid/missing category if present.
+5. Inspect some records around the cutoffs to verify boundary behavior.
+
+**Hints:** Review `.copy()`, `.apply()`, and `.value_counts(dropna=False)`. A custom function that expects **one scalar value** can be applied to a pandas Series one observation at a time.
+
+```python
+# Your code here: create lex_classified
+
+# Your code here: apply the function to a new category column
+
+# Your code here: validate category counts and boundary cases
+```
+
+# Part 4. Bring the skills together
+
+## Exercise 7. Produce a country comparison extract
+
+Your stakeholder asks for a concise, reproducible output showing how life expectancy changed between two years for selected countries.
+
+Using `lex_classified`:
+
+1. Choose **three countries** that exist in the file.
+2. Choose **2000 and 2020** if both years exist in the dataset. If either is not present, select two valid years and document the change.
+3. Filter to your selected countries and years, retaining country, year, life expectancy, and the category you created.
+4. Reshape the selected data into a **wide comparison table** with one row per country and a separate life expectancy column for each chosen year.
+5. Create a variable showing the **difference in years** between the later and earlier life expectancy values. State clearly which year is subtracted from which.
+6. Identify countries with missing values in either year and decide how you will report an unavailable difference.
+7. In a Colab text cell, write **three concise observations** based only on your results. Avoid causal interpretations.
+
+Call your final comparison table **`life_expectancy_comparison`**.
+
+**Guidance:** Combine the skills from Exercises 2, 3, and 6. You may need to check uniqueness before pivoting, confirm column types, and use subtraction to quantify change. **A difference in life expectancy years is not a percentage change.**
+
+```python
+# Your code here: choose countries and years, then filter
+
+# Your code here: pivot into a country-level comparison table
+
+# Your code here: calculate and inspect life expectancy change
+```
+
+### Optional stretch challenge: parameterize a comparison
+
+For learners ready for a further challenge, define a function called **`compare_life_expectancy`** that accepts:
+
+- a long-format DataFrame;
+- a list of countries;
+- `start_year=2000` and `end_year=2020` as **default arguments**.
+
+The function should return an appropriately labelled country comparison table with the change between years. Consider how to check for invalid years, duplicate country-year combinations, and missing values. **This challenge is optional and is not required for successful completion.**
+
+```python
+# Your code here: define compare_life_expectancy() with default years
+
+# Your code here: call it with default years and then custom years
+```
+
+# Part 5. Export and validate your work
+
+## Step 6. Create an output folder
+
+Run the following setup code in Colab:
+
+```python
+from pathlib import Path
+
+output_dir = Path("outputs")
+output_dir.mkdir(parents=True, exist_ok=True)
+```
+
+This is a **generic example** of how to export a DataFrame. `example_df` is only a placeholder, so do not run the example unchanged:
+
+```python
+# Replace example_df with a DataFrame that you created
+# example_df.to_csv(output_dir / "example.csv", index=False)
+```
+
+**Your task:** Export the following completed outputs into `outputs` as CSV files, without row indices:
+
+- `lex_long`
+- `lex_classified`
+- `life_expectancy_comparison`
+
+Use informative filenames such as `lex_long.csv`, `lex_classified.csv`, and `life_expectancy_comparison.csv`. Download the exports if you want to keep local copies; Colab's runtime file storage is temporary.
+
+```python
+# Your code here: export the three requested datasets
+
+# Your code here: verify that the files were written successfully
+```
+
+## Final quality-control checklist
+
+- [ ] The original file loaded successfully into `lex_wide`.
+- [ ] `lex_long` contains `country`, `year`, and `life_expectancy` with sensible types.
+- [ ] You can explain what changed in the **unit of observation** after melting.
+- [ ] Your country/year filters return only the requested records.
+- [ ] You checked country-year uniqueness before using `.pivot()`.
+- [ ] You reviewed whether reshaping back to wide preserved values.
+- [ ] `calc_bmi` returns a result when given arguments.
+- [ ] `classify_life_expectancy` uses conditional logic and default values.
+- [ ] Your classifier handles boundaries and invalid/missing values correctly.
+- [ ] `lex_classified` has a new category column but the same number of rows as `lex_long`.
+- [ ] `life_expectancy_comparison` reports an interpretable difference between years.
+- [ ] The three CSV files were exported successfully.
+- [ ] Your notebook runs in order from the first cell to the final cell in a fresh Colab runtime.
+
+::: {.callout-tip title="Reflect before the live workshop"}
+In **one short Colab text cell**, explain: (1) when you would choose wide instead of long data; (2) why you used a function rather than repeatedly writing classification conditions; and (3) one bug or challenge you encountered and how you resolved it.
+:::
+
+# Submission instructions
+
+1. Complete your work in **Google Colab**, not in the instructor's `.qmd`.
+2. Save the notebook as **`python_workshop_05_reshaping_functions.ipynb`**.
+3. Include your code for all **required** exercises, your responses to the inspection questions, your final comparison observations, and the reflection prompt.
+4. Restart the Colab runtime and run your notebook from top to bottom to check for missing objects and execution-order errors.
+5. Download or save the completed `.ipynb` and **upload it to the designated assignment submission area** in the SI Analytics learning portal. CSV outputs do **not** need to be submitted unless specifically requested by the instructor.
+6. The optional stretch challenge is encouraged but not required.
+
+::: {.callout-important title="How your work will be assessed"}
+Your work will be reviewed for **correct reshaping and filtering**, function design, argument/default usage, conditional logic, treatment of missing data, thoughtful validation, reproducibility, and clear interpretation. We value **your independent reasoning** more than simply producing an output without being able to explain it.
+:::
+
+**Need help?** Revisit the videos, read the displayed error messages, consult the pandas documentation, and bring unresolved questions to the instructor-led workshop or technical help session.
+
+<div class="sia-divider"></div>
+
+<div class="sia-small">SI Analytics · Empowering decisions, driving innovation · [Website](https://www.sianalytics.org) · [Learning portal](https://www.sianalytics.org/portal/auth)</div>
+
+**DATA → EVIDENCE → INSIGHT → ACTION**
