@@ -1,0 +1,232 @@
+---
+title: "Python Coding Basics | SI Analytics Assessment"
+format:
+  html:
+    theme: cosmo
+    css: si-analytics.css
+    page-layout: full
+    toc: false
+    number-sections: false
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+<!-- R generates the HTML cards. Browser-side JS grades the static GitHub Pages output. -->
+
+```{r}
+#| label: quiz-data
+#| include: false
+questions <- list(
+  list(topic="Comments", stem="Which symbol begins a single-line comment in Python?", options=c("#", "//", "--", "%"), answer="A", explanation="Python ignores the text following # on that line."),
+  list(topic="Comments", stem="What happens when Python runs <code>2 + 2  # addition</code>?", options=c("It evaluates to 4", "It raises a NameError", "It displays the word addition", "It ignores the whole line"), answer="A", explanation="The arithmetic runs normally. Only the text after # is ignored."),
+  list(topic="Arithmetic", stem="What does <code>10 % 3</code> return?", options=c("3", "1", "0", "3.33"), answer="B", explanation="The modulo operator (%) returns the remainder after division; dividing 10 by 3 leaves 1."),
+  list(topic="Arithmetic", stem="What does <code>10 // 3</code> return?", options=c("3.33", "4", "3", "1"), answer="C", explanation="The // operator performs floor division, giving 3 here."),
+  list(topic="Arithmetic", stem="What is the result of <code>2 + 2 * 2</code>?", options=c("8", "6", "12", "4"), answer="B", explanation="Multiplication occurs before addition: 2 + (2 × 2) = 6."),
+  list(topic="Arithmetic", stem="Which expression evaluates to <code>10</code>?", options=c("2 + 2 * 3", "6 + 2 ** 2", "2 ** 3 + 3", "10 % 3"), answer="B", explanation="Exponentiation occurs first: 2 ** 2 = 4, then 6 + 4 = 10."),
+  list(topic="Math library", stem="Which code finds the square root of 81 using the math library?", options=c("math.sqrt(81) after import math", "math.square(81) after import math", "sqrt.math(81) after import math", "math.log(81) after import math"), answer="A", explanation="Import math, then call math.sqrt(81) to obtain 9.0."),
+  list(topic="Math library", stem="In <code>random.randint(1, 10)</code>, what are <code>1</code> and <code>10</code>?", options=c("Libraries", "Variables", "Arguments", "Modules"), answer="C", explanation="The two numbers are arguments passed to the randint function."),
+  list(topic="Code readability", stem="What is wrong with a leading space before <code>math.sqrt(100)</code> at the top level, when no block is open?", options=c("It changes the square root", "It may raise IndentationError", "It changes 100 to text", "It imports math automatically"), answer="B", explanation="Unexpected indentation outside a code block can raise IndentationError."),
+  list(topic="Code readability", stem="Which line follows the spacing convention taught in the lesson?", options=c("x=5+3*2", "x =5+3*2", "x = 5 + 3 * 2", "x= 5+ 3*2"), answer="C", explanation="Spaces around assignment and arithmetic operators improve readability."),
+  list(topic="Variables and types", stem="After <code>my_var = 2 + 2</code>, what is the value of <code>my_var</code>?", options=c("2", "4", "\"2 + 2\"", "None"), answer="B", explanation="The expression is evaluated before its result, 4, is stored in my_var."),
+  list(topic="Variables and types", stem="Which built-in function can identify whether <code>height = 1.4</code> is a float?", options=c("print()", "input()", "len()", "type()"), answer="D", explanation="type(height) returns the type of its value, which is float in this case."),
+  list(topic="Variables and types", stem="What is displayed by <code>first_name = \"Joanna\"</code> followed by <code>first_name = \"Luigi\"</code> and <code>print(first_name)</code>?", options=c("Joanna", "Luigi", "Joanna Luigi", "NameError"), answer="B", explanation="The second assignment replaces the prior value; print displays Luigi."),
+  list(topic="Variables and types", stem="What does <code>\"Joanna\" + \" \" + \"Luigi\"</code> produce?", options=c("JoannaLuigi", "Joanna Luigi", "A TypeError", "Joanna + Luigi"), answer="B", explanation="The + operator concatenates the strings, and the middle string adds a space."),
+  list(topic="Input", stem="What kind of value does <code>input()</code> normally return?", options=c("An integer", "A float", "A string", "A Boolean"), answer="C", explanation="The input() function returns entered text as a string, even if the user types digits."),
+  list(topic="Input", stem="Which code asks for a name and then prints a greeting using that name?", options=c("name = input(\"Name? \"); print(\"Hello,\", name)", "name = print(\"Name? \"); input(name)", "input = name(\"Name? \"); print(name)", "name = type(\"Name? \"); print(name)"), answer="A", explanation="input() captures the response; print() can then use the stored variable."),
+  list(topic="Errors", stem="If you define <code>my_number = 48</code> and then evaluate <code>My_number + 2</code>, what happens?", options=c("It returns 50", "It returns 48", "It raises NameError", "It returns 482"), answer="C", explanation="Python is case-sensitive; My_number is different from my_number and has not been defined."),
+  list(topic="Errors", stem="Given <code>my_1st_name = \"Kene\"</code>, why might <code>print(my_Ist_name)</code> fail?", options=c("The string must use single quotes", "The variable names differ: 1 versus I", "Python cannot print strings", "Underscores are forbidden"), answer="B", explanation="The reference uses digit 1 while the print statement uses uppercase I, so the latter name is undefined."),
+  list(topic="Naming", stem="Which of these is a valid Python variable name?", options=c("1st_name", "full-name", "current@job", "age_in_years"), answer="D", explanation="Names can contain letters, digits and underscores but may not begin with a digit or contain hyphens or @."),
+  list(topic="Naming", stem="Which naming style does the lesson recommend for descriptive, multiword variables?", options=c("snake_case", "kebab-case", "spaces between words", "names beginning with numbers"), answer="A", explanation="The lesson recommends lowercase snake_case with underscores between words.")
+)
+stopifnot(length(questions) == 20L)
+pass_mark <- 16L
+success_code <- "ADAP1025"
+escape_html <- function(x) {
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  x <- gsub(">", "&gt;", x, fixed = TRUE)
+  x <- gsub('"', "&quot;", x, fixed = TRUE)
+  x
+}
+```
+
+```{=html}
+<style>
+/* These rules are intentionally scoped to the assessment and take precedence
+   over the shared si-analytics.css heading, code, and typography rules. */
+#sia-quiz {--navy:#082B4D;--teal:#087d88;--gold:#F4C430;--ink:#13263e;--muted:#506477;--line:#dce6ee;--soft:#f5f9fb;max-width:1050px;margin:0 auto;padding:24px 20px 65px;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.55;color:var(--ink)}
+#sia-quiz *,#sia-quiz *::before,#sia-quiz *::after{box-sizing:border-box}
+#sia-quiz .sia-hero{background:linear-gradient(115deg,#081c39 0%,#103357 68%,#087786 100%);border-top:5px solid var(--gold);border-radius:20px;padding:34px 38px;color:#fff;box-shadow:0 18px 42px rgba(8,43,77,.14)}
+#sia-quiz .sia-brand{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+#sia-quiz .sia-logo-wrap{background:#fff;border-radius:10px;padding:7px 13px;display:inline-flex;align-items:center;min-height:67px}
+#sia-quiz .sia-logo{display:block;width:220px;max-width:100%;height:auto}
+#sia-quiz .sia-tag{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#b7e9ea;font-weight:700}
+#sia-quiz .sia-eyebrow{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin:28px 0 7px}
+#sia-quiz .sia-hero h1{color:#fff;border:0;padding:0;margin:0 0 12px;font-family:Georgia,serif;font-weight:700;font-size:clamp(32px,4.4vw,48px);line-height:1.16}
+#sia-quiz .sia-hero p{font-size:16px;line-height:1.7;color:#e0ecf3;max-width:760px;margin:0}
+#sia-quiz .sia-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:25px;max-width:690px}
+#sia-quiz .sia-stat{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.24);padding:13px 17px;border-radius:12px}
+#sia-quiz .sia-stat strong{display:block;color:#fff;font-size:23px;line-height:1.3}
+#sia-quiz .sia-stat span{color:#d4e8ef;font-size:12px}
+#sia-quiz .sia-info,#sia-quiz .sia-topic,#sia-quiz .sia-question,#sia-quiz .sia-result,#sia-quiz .sia-review{background:#fff;border:1px solid var(--line);border-radius:15px}
+#sia-quiz .sia-info{margin:20px 0;padding:23px 26px}
+#sia-quiz h2{border:0;padding:0;margin:0 0 12px;color:var(--navy);font-size:22px;font-weight:750;line-height:1.35}
+#sia-quiz p,#sia-quiz li{font-size:15px;line-height:1.7}
+#sia-quiz .sia-notice{background:#fff9e9;border-left:4px solid var(--gold);border-radius:8px;padding:14px 17px;margin-top:16px;font-size:14px}
+#sia-quiz .sia-topic{padding:16px 22px;border-left:5px solid var(--teal);margin:27px 0 12px}
+#sia-quiz .sia-topic h2{margin:0;font-size:20px}
+#sia-quiz .sia-question{padding:22px 24px;margin:13px 0;border-top:3px solid var(--gold)}
+#sia-quiz .sia-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+#sia-quiz .sia-number{color:#087d88;font-size:12px;font-weight:800;letter-spacing:1px}
+#sia-quiz .sia-topic-tag{background:#e8f6f5;color:#075e67;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:750}
+#sia-quiz .sia-stem{font-size:16px;line-height:1.65;font-weight:700;margin-bottom:13px;color:var(--ink)}
+#sia-quiz .sia-choices{display:grid;gap:9px}
+#sia-quiz label.sia-choice{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;color:var(--ink);background:#fff;font-size:14px;line-height:1.55}
+#sia-quiz label.sia-choice:hover{background:#f1fbfc;border-color:#7bbfc2}
+#sia-quiz label.sia-choice input{margin:5px 0 0;accent-color:var(--teal);flex-shrink:0}
+#sia-quiz .sia-letter{background:#e9f0f4;border-radius:5px;min-width:25px;text-align:center;font-size:12px;font-weight:800;padding:3px}
+#sia-quiz .sia-choice-label{flex:1;overflow-wrap:anywhere}
+#sia-quiz label.sia-choice.sia-correct{background:#e9f8ef;border-color:#2f8858}
+#sia-quiz label.sia-choice.sia-incorrect{background:#fff0ee;border-color:#c84d45}
+#sia-quiz code{background:#edf5f7;color:#06495b;padding:2px 5px;border-radius:4px;font-size:.91em;overflow-wrap:anywhere;white-space:normal}
+#sia-quiz .sia-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:15px}
+#sia-quiz button{font:inherit;font-size:14px;font-weight:750;cursor:pointer;border:0;border-radius:8px;padding:10px 18px}
+#sia-quiz .sia-check{background:#087d88;color:#fff}
+#sia-quiz .sia-check:hover{background:#075c66}
+#sia-quiz .sia-reset{background:#082B4D;color:#fff;margin-top:14px}
+#sia-quiz button:focus-visible,#sia-quiz label:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+#sia-quiz .sia-status{font-size:13px;color:var(--muted);font-weight:650}
+#sia-quiz .sia-feedback{display:none;margin-top:13px;padding:13px 15px;border-radius:9px;font-size:14px;line-height:1.65}
+#sia-quiz .sia-feedback.sia-good{display:block;background:#ecf9f0;color:#16552e;border:1px solid #addbb9}
+#sia-quiz .sia-feedback.sia-bad{display:block;background:#fff1ef;color:#863328;border:1px solid #f0c5c0}
+#sia-quiz .sia-result,#sia-quiz .sia-review{margin-top:22px;padding:24px 27px}
+#sia-quiz .sia-result{border-top:5px solid var(--gold)}
+#sia-quiz .sia-progress{height:14px;border-radius:999px;background:#e3eaf0;overflow:hidden;margin:18px 0 10px}
+#sia-quiz .sia-fill{height:100%;width:0;background:linear-gradient(90deg,#097a86,#2ab5ad);transition:width .2s}
+#sia-quiz .sia-scoreline{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;font-size:14px}
+#sia-quiz .sia-code-panel{display:none;background:linear-gradient(110deg,#082B4D,#076c75);border-radius:12px;padding:22px;text-align:center;color:#fff;margin-top:18px}
+#sia-quiz .sia-code-panel strong{display:block;color:#fff;font-size:29px;letter-spacing:3px;margin:7px 0}
+#sia-quiz .sia-code-panel .sia-code-eyebrow{font-size:12px;color:var(--gold);letter-spacing:1px;font-weight:800}
+#sia-quiz .sia-code-panel p{color:#e1eff3;margin:0}
+#sia-quiz .sia-review ul{columns:2;column-gap:30px;padding-left:24px}
+#sia-quiz .sia-footer{text-align:center;font-size:13px;color:var(--muted);padding-top:27px}
+@media(max-width:640px){#sia-quiz{padding:12px 12px 40px}#sia-quiz .sia-hero{padding:24px 20px}#sia-quiz .sia-logo{width:180px}#sia-quiz .sia-brand{align-items:flex-start}#sia-quiz .sia-stats{grid-template-columns:1fr 1fr}#sia-quiz .sia-info,#sia-quiz .sia-result,#sia-quiz .sia-review{padding:20px}#sia-quiz .sia-question{padding:17px}#sia-quiz .sia-review ul{columns:1}}
+@media(max-width:420px){#sia-quiz .sia-stats{grid-template-columns:1fr}#sia-quiz .sia-hero h1{font-size:32px}}
+</style>
+```
+
+```{r}
+#| label: assessment-interface
+#| results: asis
+#| echo: false
+# Emit the entire shell in one R chunk to avoid Pandoc splitting HTML containers.
+logo <- "https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png"
+cat(sprintf('<div id="sia-quiz"><header class="sia-hero"><div class="sia-brand"><div class="sia-logo-wrap"><img class="sia-logo" src="%s" alt="SI Analytics logo"></div><div class="sia-tag">Academy | Bootcamp 8.0</div></div>', logo))
+cat('<div class="sia-eyebrow">Week 1 | Interactive knowledge assessment</div>')
+cat('<h1>Python Coding Basics</h1><p>Build confidence with the fundamental building blocks of Python. Test your understanding, receive targeted feedback, and strengthen the skills you will use in Google Colab.</p>')
+cat('<div class="sia-stats"><div class="sia-stat"><strong>20</strong><span>Questions</span></div><div class="sia-stat"><strong>8</strong><span>Lesson areas</span></div><div class="sia-stat"><strong>80%</strong><span>Mastery standard</span></div></div></header>')
+cat('<section class="sia-info"><h2>Assessment instructions</h2><p>This assessment follows the <strong>Python Coding Basics</strong> lesson. Each question has one correct answer. Select an option and choose <strong>Check answer</strong> to get feedback. You can revise and check your answers again.</p>')
+cat('<div class="sia-notice"><strong>Completion:</strong> Check all 20 questions and achieve at least <strong>16 correct (80%)</strong> to reveal your success code. Your progress is scored locally in your browser.</div></section>')
+last_topic <- ""
+for (i in seq_along(questions)) {
+  q <- questions[[i]]
+  if (!identical(q$topic,last_topic)) {
+    cat(sprintf('<section class="sia-topic"><h2>%s</h2></section>',escape_html(q$topic)))
+    last_topic <- q$topic
+  }
+  cat(sprintf('<article class="sia-question" id="question-%d" data-answer="%s" data-checked="false" data-correct="false">',i,q$answer))
+  cat(sprintf('<div class="sia-meta"><span class="sia-number">QUESTION %02d</span><span class="sia-topic-tag">%s</span></div>',i,escape_html(q$topic)))
+  cat(sprintf('<div class="sia-stem">%s</div><div class="sia-choices">',q$stem))
+  for(j in seq_along(q$options)){
+    a <- LETTERS[j]
+    cat(sprintf('<label class="sia-choice"><input type="radio" name="question%d" value="%s"><span class="sia-letter">%s</span><span class="sia-choice-label">%s</span></label>',i,a,a,escape_html(q$options[[j]])))
+  }
+  cat('</div><div class="sia-actions"><button class="sia-check" type="button">Check answer</button><span class="sia-status" aria-live="polite">Not checked</span></div>')
+  cat(sprintf('<div class="sia-feedback" data-explanation="%s" role="status" aria-live="polite"></div></article>',escape_html(q$explanation)))
+}
+cat('<section class="sia-result" id="assessment-result"><h2>Your assessment progress</h2><p>Check every question and reach the mastery standard to reveal your completion code.</p><div class="sia-progress" role="progressbar" aria-label="Correct answer score" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="sia-fill" id="sia-fill"></div></div><div class="sia-scoreline"><strong id="sia-score">0 / 20 correct</strong><span id="sia-checked">0 of 20 checked</span></div><p id="sia-message" aria-live="polite">Begin with Question 1.</p><div class="sia-code-panel" id="sia-code-panel" aria-live="polite"><div class="sia-code-eyebrow">SI ANALYTICS | SUCCESS CODE</div><strong id="sia-success-code"></strong><p>Record this code for your learning activities.</p></div><button type="button" class="sia-reset" id="sia-reset">Reset assessment</button></section>')
+cat('<section class="sia-review"><h2>Key concepts to reinforce</h2><ul><li>Comments and documentation</li><li>Arithmetic, modulo and floor division</li><li>Operator precedence</li><li>Math libraries and function arguments</li><li>Indentation and readable code</li><li>Variable assignment and data types</li><li>User input and string operations</li><li>Case sensitivity, errors and variable naming</li></ul></section>')
+cat('<footer class="sia-footer">SI Analytics | Data → Evidence → Insight → Action<br>www.sianalytics.org</footer></div>')
+cat(sprintf('<script>window.SIAQuiz = {pass:%d,code:"%s"};</script>',pass_mark,success_code))
+```
+
+```{=html}
+<script>
+(function () {
+  'use strict';
+  const start = () => {
+    const root = document.getElementById('sia-quiz');
+    if (!root) return;
+    const cards = Array.from(root.querySelectorAll('.sia-question'));
+    const config = window.SIAQuiz || {pass:16,code:'ADAP1025'};
+    const fill = root.querySelector('#sia-fill');
+    const score = root.querySelector('#sia-score');
+    const checkedText = root.querySelector('#sia-checked');
+    const message = root.querySelector('#sia-message');
+    const panel = root.querySelector('#sia-code-panel');
+    const success = root.querySelector('#sia-success-code');
+    const progress = root.querySelector('[role="progressbar"]');
+    function update() {
+      const checked = cards.filter(c => c.dataset.checked === 'true').length;
+      const correct = cards.filter(c => c.dataset.checked === 'true' && c.dataset.correct === 'true').length;
+      const total = cards.length;
+      const percentage = total ? 100 * correct / total : 0;
+      fill.style.width = percentage + '%';
+      progress.setAttribute('aria-valuenow', String(Math.round(percentage)));
+      score.textContent = `${correct} / ${total} correct`;
+      checkedText.textContent = `${checked} of ${total} checked`;
+      const passed = total > 0 && checked === total && correct >= config.pass;
+      panel.style.display = passed ? 'block' : 'none';
+      success.textContent = passed ? config.code : '';
+      if (passed) message.textContent = 'Mastery standard achieved. Your success code is shown below.';
+      else if (checked < total) message.textContent = `Check the remaining ${total - checked} question(s). At least ${config.pass} correct answers are required.`;
+      else message.textContent = `You have ${correct} correct answers. Review and retry to achieve ${config.pass}.`;
+    }
+    function clearCard(card, resetRadio = false) {
+      card.dataset.checked = 'false';
+      card.dataset.correct = 'false';
+      card.querySelectorAll('.sia-choice').forEach(label => label.classList.remove('sia-correct','sia-incorrect'));
+      if (resetRadio) card.querySelectorAll('input[type="radio"]').forEach(input => { input.checked = false; });
+      const feedback = card.querySelector('.sia-feedback');
+      feedback.className = 'sia-feedback';
+      feedback.textContent = '';
+      card.querySelector('.sia-status').textContent = 'Not checked';
+    }
+    cards.forEach(card => {
+      const radios = Array.from(card.querySelectorAll('input[type="radio"]'));
+      const feedback = card.querySelector('.sia-feedback');
+      const status = card.querySelector('.sia-status');
+      radios.forEach(radio => radio.addEventListener('change', () => { clearCard(card); update(); }));
+      card.querySelector('.sia-check').addEventListener('click', () => {
+        const selected = radios.find(input => input.checked);
+        if (!selected) { status.textContent = 'Choose an answer first'; return; }
+        const correct = selected.value === card.dataset.answer;
+        card.dataset.checked = 'true';
+        card.dataset.correct = String(correct);
+        card.querySelectorAll('.sia-choice').forEach(label => label.classList.remove('sia-correct','sia-incorrect'));
+        selected.closest('.sia-choice').classList.add(correct ? 'sia-correct' : 'sia-incorrect');
+        if (!correct) {
+          const right = radios.find(radio => radio.value === card.dataset.answer);
+          if (right) right.closest('.sia-choice').classList.add('sia-correct');
+        }
+        feedback.className = 'sia-feedback ' + (correct ? 'sia-good' : 'sia-bad');
+        feedback.textContent = (correct ? 'Well done. ' : 'Review and try again. ') + feedback.dataset.explanation;
+        status.textContent = correct ? 'Correct' : 'Review and retry';
+        update();
+      });
+    });
+    root.querySelector('#sia-reset').addEventListener('click', () => {
+      cards.forEach(card => clearCard(card, true));
+      update();
+      root.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    update();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
+```
