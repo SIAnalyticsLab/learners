@@ -1,34 +1,199 @@
 ---
-title: "Python Workshop 4: Data Subsetting"
-format: html
+title: "Python Workshop 4 Assignment: Data Subsetting with Pandas"
+author: SI Analytics
+execute:
+  echo: true
+  error: false
+  eval: false
+  message: false
+  warning: false
+format:
+  html:
+    embeded_resources: True
+    css: si-analytics.css
+    number-sections: false
+    toc: true
+    toc-location: left
 ---
+
+
+
 
 # Introduction
 
 For this week's assignment, you will be preparing data subsets for **someone else to use**. It's a hands-on approach to using Pandas' filtering and selection methods. You can work directly in this document for the assignment.
 
-# Setup
 
-First, make sure this document is in your `si_analytics_python` folder, where your virtual environment is activated and you have pandas installed.
 
-Then, run the following code to load pandas, and set the display options for pandas dataframes:
+## Setup
+
+For this workshop, we will use **Google Colab**, a cloud-based Python environment that allows you to write and execute Python code directly in your browser.
+
+You do not need to install Python, create a virtual environment, or configure VS Code to complete this exercise.
+
+### Step 1: Open Google Colab
+
+1. Visit [Google Colab](https://colab.research.google.com/).
+2. Sign in with your Google account.
+3. Select **New Notebook**.
+4. Rename your notebook `week_05_workshop.ipynb`.
+5. Make sure your notebook is connected to a Python runtime.
+
+### Step 2: Import pandas
+
+Google Colab comes with pandas pre-installed.
+
+In your first code cell, run:
 
 ```{python}
+#| eval: false
+
 import pandas as pd
+
+# Display all columns in pandas DataFrames
 pd.set_option('display.max_columns', None)
 ```
 
-# Get the Data
+The `import pandas as pd` statement imports the pandas library, while `pd.set_option()` allows you to view all columns without pandas automatically hiding some of them.
 
-Download the lending club dataset from GitHub here[https://github.com/SIAnalyticsLab/pdav_q1-2026_materials/blob/main/week_05_workshop/data/loans_full_schema.csv](https://github.com/SIAnalyticsLab/pdav_q1-2026_materials/blob/main/week_05_workshop/data/loans_full_schema.csv) then place it in an appropriate place in your `si_analytics_python` folder.
+## Get the Data
 
-Below, load the data into a pandas dataframe with the `read_csv()` function from pandas.
+We will work with the **Lending Club dataset**, which contains information about loans issued through a peer-to-peer lending platform.
+
+Each row represents an individual loan, while the columns describe various loan characteristics.
+
+### Step 3: Load the dataset directly from GitHub
+
+Rather than downloading the CSV file manually, Google Colab can retrieve it directly from its online location.
+
+The dataset is available in the [SI Analytics GitHub repository](https://github.com/SIAnalyticsLab/pdav_q1-2026_materials/blob/main/week_05_workshop/data/loans_full_schema.csv).
+
+Run the following code in a new Google Colab cell:
 
 ```{python}
-# Your code here
+#| eval: false
+
+# Raw CSV URL from GitHub
+data_url = (
+    "https://raw.githubusercontent.com/"
+    "SIAnalyticsLab/pdav_q1-2026_materials/"
+    "main/week_05_workshop/data/"
+    "loans_full_schema.csv"
+)
+
+# Import the dataset into a pandas DataFrame
+loans_data = pd.read_csv(data_url)
+
+# Display the first five rows
+loans_data.head()
 ```
 
-View the dataset in VS Code with the data viewer, so you can understand what it contains.
+**Important:** The URL must point to the raw CSV file. A standard GitHub file-viewing URL containing `github.com/.../blob/...` cannot be passed directly to `pd.read_csv()`.
+
+### Step 4: Explore the dataset
+
+Once the dataset has loaded successfully, inspect its structure.
+
+**View the first five rows**
+
+```{python}
+#| eval: false
+
+loans_data.head()
+```
+
+**Check the number of rows and columns**
+
+```{python}
+#| eval: false
+
+loans_data.shape
+```
+
+**Display the column names**
+
+```{python}
+#| eval: false
+
+loans_data.columns.tolist()
+```
+
+**Inspect variable types and missing values**
+
+```{python}
+#| eval: false
+
+loans_data.info()
+```
+
+**Generate descriptive statistics**
+
+```{python}
+#| eval: false
+
+loans_data.describe()
+```
+
+### Step 5: Use the Google Colab DataFrame viewer
+
+Google Colab provides an interactive interface for exploring tabular data.
+
+Run:
+
+```{python}
+#| eval: false
+
+from google.colab import data_table
+
+data_table.DataTable(loans_data)
+```
+
+This allows you to explore the dataset interactively, including sorting, filtering, and navigating through its columns.
+
+Alternatively, you can display the DataFrame with:
+
+```{python}
+#| eval: false
+
+display(loans_data)
+```
+
+### Your task
+
+Before proceeding to the next exercise:
+
+1. Import pandas successfully.
+2. Load the Lending Club dataset directly from GitHub.
+3. Display the first five rows.
+4. Determine the number of observations and variables.
+5. Inspect the column names and data types.
+6. Explore the dataset using the Google Colab DataFrame viewer.
+
+**Expected outcome:** You should have a pandas DataFrame named `loans_data` that is ready for subsequent data cleaning, transformation, and analysis.
+
+**Learning objective:** By completing this exercise, you will demonstrate that you can independently import an externally hosted CSV dataset into Google Colab and perform an initial assessment of its structure.
+
+## Alternative: Upload a CSV file manually
+
+```{python}
+from google.colab import files
+import io
+import pandas as pd
+
+# Select and upload a CSV file
+uploaded = files.upload()
+
+# Read the uploaded file
+loans_data = pd.read_csv(
+    io.BytesIO(uploaded["loans_full_schema.csv"])
+)
+
+# Preview the dataset
+loans_data.head()
+
+```
+
+
 
 The dataset comes from Lending Club, a platform for peer-to-peer lending. Each row pertains to a specific loan made through the platform.
 
