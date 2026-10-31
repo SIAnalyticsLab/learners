@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="SI Analytics">
+
+<title>Python Workshop 3 Assignment: Data Subsetting with Pandas</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="python_workshop_03_data_subsetting_pandas_files/libs/clipboard/clipboard.min.js"></script>
+<script src="python_workshop_03_data_subsetting_pandas_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="python_workshop_03_data_subsetting_pandas_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="python_workshop_03_data_subsetting_pandas_files/libs/quarto-html/popper.min.js"></script>
+<script src="python_workshop_03_data_subsetting_pandas_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="python_workshop_03_data_subsetting_pandas_files/libs/quarto-html/anchor.min.js"></script>
+<link href="python_workshop_03_data_subsetting_pandas_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="python_workshop_03_data_subsetting_pandas_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="python_workshop_03_data_subsetting_pandas_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="python_workshop_03_data_subsetting_pandas_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="python_workshop_03_data_subsetting_pandas_files/libs/bootstrap/bootstrap-efbb37e9afcc02144ebbc7afd12a776f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+<link rel="stylesheet" href="si-analytics.css">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#part-1.-prepare-your-google-colab-notebook" id="toc-part-1.-prepare-your-google-colab-notebook" class="nav-link" data-scroll-target="#part-1.-prepare-your-google-colab-notebook">Part 1. Prepare your Google Colab notebook</a>
+  <ul class="collapse">
+  <li><a href="#step-1.-create-your-notebook" id="toc-step-1.-create-your-notebook" class="nav-link" data-scroll-target="#step-1.-create-your-notebook">Step 1. Create your notebook</a></li>
+  <li><a href="#step-2.-import-packages-and-create-an-output-directory" id="toc-step-2.-import-packages-and-create-an-output-directory" class="nav-link" data-scroll-target="#step-2.-import-packages-and-create-an-output-directory">Step 2. Import packages and create an output directory</a></li>
+  <li><a href="#step-3.-load-the-lending-club-dataset" id="toc-step-3.-load-the-lending-club-dataset" class="nav-link" data-scroll-target="#step-3.-load-the-lending-club-dataset">Step 3. Load the Lending Club dataset</a></li>
+  <li><a href="#step-4.-explore-and-validate-the-source-data" id="toc-step-4.-explore-and-validate-the-source-data" class="nav-link" data-scroll-target="#step-4.-explore-and-validate-the-source-data">Step 4. Explore and validate the source data</a></li>
+  <li><a href="#alternative.-upload-the-csv-manually" id="toc-alternative.-upload-the-csv-manually" class="nav-link" data-scroll-target="#alternative.-upload-the-csv-manually">Alternative. Upload the CSV manually</a></li>
+  <li><a href="#step-5.-remove-the-source-row-number-artifact" id="toc-step-5.-remove-the-source-row-number-artifact" class="nav-link" data-scroll-target="#step-5.-remove-the-source-row-number-artifact">Step 5. Remove the source row-number artifact</a></li>
+  </ul></li>
+  <li><a href="#part-2.-essential-pandas-subsetting-techniques" id="toc-part-2.-essential-pandas-subsetting-techniques" class="nav-link" data-scroll-target="#part-2.-essential-pandas-subsetting-techniques">Part 2. Essential pandas subsetting techniques</a>
+  <ul class="collapse">
+  <li><a href="#export-and-validation-pattern" id="toc-export-and-validation-pattern" class="nav-link" data-scroll-target="#export-and-validation-pattern">Export and validation pattern</a></li>
+  </ul></li>
+  <li><a href="#part-3.-create-and-export-five-data-subsets" id="toc-part-3.-create-and-export-five-data-subsets" class="nav-link" data-scroll-target="#part-3.-create-and-export-five-data-subsets">Part 3. Create and export five data subsets</a>
+  <ul class="collapse">
+  <li><a href="#exercise-1.-demographic-and-loan-information" id="toc-exercise-1.-demographic-and-loan-information" class="nav-link" data-scroll-target="#exercise-1.-demographic-and-loan-information">Exercise 1. Demographic and loan information</a></li>
+  <li><a href="#exercise-2.-credit-evaluation-variables" id="toc-exercise-2.-credit-evaluation-variables" class="nav-link" data-scroll-target="#exercise-2.-credit-evaluation-variables">Exercise 2. Credit evaluation variables</a></li>
+  <li><a href="#exercise-3.-high-income-borrowers" id="toc-exercise-3.-high-income-borrowers" class="nav-link" data-scroll-target="#exercise-3.-high-income-borrowers">Exercise 3. High-income borrowers</a></li>
+  <li><a href="#exercise-4.-high-risk-loans" id="toc-exercise-4.-high-risk-loans" class="nav-link" data-scroll-target="#exercise-4.-high-risk-loans">Exercise 4. High-risk loans</a></li>
+  <li><a href="#exercise-5.-prime-borrowers" id="toc-exercise-5.-prime-borrowers" class="nav-link" data-scroll-target="#exercise-5.-prime-borrowers">Exercise 5. Prime borrowers</a></li>
+  </ul></li>
+  <li><a href="#part-4.-validate-and-document-your-outputs" id="toc-part-4.-validate-and-document-your-outputs" class="nav-link" data-scroll-target="#part-4.-validate-and-document-your-outputs">Part 4. Validate and document your outputs</a></li>
+  <li><a href="#part-5.-optional-challenge-one-excel-workbook-five-sheets" id="toc-part-5.-optional-challenge-one-excel-workbook-five-sheets" class="nav-link" data-scroll-target="#part-5.-optional-challenge-one-excel-workbook-five-sheets">Part 5. Optional challenge: One Excel workbook, five sheets</a></li>
+  <li><a href="#part-6.-submit-your-assignment" id="toc-part-6.-submit-your-assignment" class="nav-link" data-scroll-target="#part-6.-submit-your-assignment">Part 6. Submit your assignment</a>
+  <ul class="collapse">
+  <li><a href="#reflection-questions" id="toc-reflection-questions" class="nav-link" data-scroll-target="#reflection-questions">Reflection questions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Python Workshop 3 Assignment: Data Subsetting with Pandas</h1>
+<p class="subtitle lead">Accelerated Data Analytics Bootcamp | Python pathway</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>SI Analytics </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="hero">
+<p><strong>WORKSHOP 03 · PRACTICAL ASSIGNMENT</strong></p>
+<section id="data-subsetting-with-pandas" class="level1">
+<h1>Data Subsetting with Pandas</h1>
+<p><strong>Select columns. Filter rows. Validate extracts. Deliver reproducible outputs.</strong></p>
+<p>This workshop places you in the role of an analyst preparing five reliable extracts for a colleague. You will work in <strong>Google Colab</strong>, using <strong>Python and pandas</strong>. This guide is a read-only Quarto HTML handout; write and run your assignment in a separate Colab notebook.</p>
+</section>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="What you will submit">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>What you will submit
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Submit your completed <strong>Python script (<code>.py</code>)</strong>. You do not need to submit the exported CSV or Excel files. Your code must demonstrate that the extracts are created, checked, and saved.</p>
+</div>
+</div>
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end, you should be able to:</p>
+<ol type="1">
+<li>Import a hosted CSV and inspect its dimensions, schema, and missing values.</li>
+<li>Use pandas column selection, <code>.filter(regex=...)</code>, and row-based Boolean masks.</li>
+<li>Combine conditions correctly with <code>|</code> (<strong>OR</strong>), <code>&amp;</code> (<strong>AND</strong>), and <code>.isin()</code>.</li>
+<li>Rename variables, validate subsets, and export CSV files.</li>
+<li>Optionally assemble a multi-sheet Excel workbook.</li>
+</ol>
+</section>
+<section id="part-1.-prepare-your-google-colab-notebook" class="level2">
+<h2 class="anchored" data-anchor-id="part-1.-prepare-your-google-colab-notebook">Part 1. Prepare your Google Colab notebook</h2>
+<section id="step-1.-create-your-notebook" class="level3">
+<h3 class="anchored" data-anchor-id="step-1.-create-your-notebook">Step 1. Create your notebook</h3>
+<ol type="1">
+<li>Visit <a href="https://colab.research.google.com/">Google Colab</a> and sign in.</li>
+<li>Create a new notebook called <strong><code>python_workshop_03_data_subsetting.ipynb</code></strong>.</li>
+<li>Connect to a <strong>Python runtime</strong>.</li>
+<li>Organize the notebook with <em>text cells</em> using this guide’s headings and <em>code cells</em> for your answers.</li>
+<li>Save your work regularly to Google Drive. Files you create inside the Colab runtime may disappear when the runtime is reset.</li>
+</ol>
+</section>
+<section id="step-2.-import-packages-and-create-an-output-directory" class="level3">
+<h3 class="anchored" data-anchor-id="step-2.-import-packages-and-create-an-output-directory">Step 2. Import packages and create an output directory</h3>
+<p>Run this setup cell <strong>before</strong> completing the exercises:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">"display.max_columns"</span>, <span class="va">None</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the folder for this session's exports</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>output_dir <span class="op">=</span> Path(<span class="st">"outputs"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>output_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>pandas</code> is already available in standard Google Colab runtimes. <code>pathlib</code> is part of Python’s standard library.</p>
+</section>
+<section id="step-3.-load-the-lending-club-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="step-3.-load-the-lending-club-dataset">Step 3. Load the Lending Club dataset</h3>
+<p>We will use <strong><code>loans_full_schema.csv</code></strong>, a loan-level dataset from the OpenIntro collection. Each row represents a loan record, while columns describe borrowers and loan characteristics.</p>
+<p><a href="https://github.com/SIAnalyticsLab/pdav_q1-2026_materials/blob/main/week_05_workshop/data/loans_full_schema.csv">View dataset in the SI Analytics GitHub repository</a> · <a href="https://vincentarelbundock.github.io/Rdatasets/doc/openintro/loans_full_schema.html">Consult the data dictionary</a></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the RAW file URL, not the GitHub /blob/ viewing page.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data_url <span class="op">=</span> (</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"https://raw.githubusercontent.com/"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SIAnalyticsLab/pdav_q1-2026_materials/"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"main/week_05_workshop/data/loans_full_schema.csv"</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>loans_data <span class="op">=</span> pd.read_csv(data_url)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>loans_data.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout callout-style-default callout-important callout-titled" title="Check the download">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Check the download
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the URL is inaccessible, open the repository link and use <strong>Download raw file</strong>, then upload the CSV using the alternative method below. The online file’s current accessibility and exact schema should be checked before the instructor distributes this assignment.</p>
+</div>
+</div>
+</section>
+<section id="step-4.-explore-and-validate-the-source-data" class="level3">
+<h3 class="anchored" data-anchor-id="step-4.-explore-and-validate-the-source-data">Step 4. Explore and validate the source data</h3>
+<p>Run each of the following commands and record what you observe:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>loans_data.head()                <span class="co"># First five records</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>loans_data.shape                 <span class="co"># Rows and columns</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>loans_data.columns.tolist()      <span class="co"># Available fields</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>loans_data.info()                <span class="co"># Types and non-null counts</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>loans_data.describe()            <span class="co"># Summary of numeric fields</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>loans_data.isna().<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).head(<span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>To explore the table interactively:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> google.colab <span class="im">import</span> data_table</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>data_table.DataTable(loans_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Alternatively, use <code>display(loans_data.head(20))</code> to keep the notebook compact.</p>
+<p><strong>Question: Record in a text cell:</strong> (a) the number of observations, (b) the number of columns, (c) two numeric fields, (d) two categorical fields, and (e) one field containing missing observations, if any.</p>
+</section>
+<section id="alternative.-upload-the-csv-manually" class="level3">
+<h3 class="anchored" data-anchor-id="alternative.-upload-the-csv-manually">Alternative. Upload the CSV manually</h3>
+<p>Only use this option if the remote import fails. Upload the file named <code>loans_full_schema.csv</code> into the notebook runtime:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> google.colab <span class="im">import</span> files</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> io</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>uploaded <span class="op">=</span> files.upload()</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>loans_data <span class="op">=</span> pd.read_csv(io.BytesIO(uploaded[<span class="st">"loans_full_schema.csv"</span>]))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>loans_data.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="step-5.-remove-the-source-row-number-artifact" class="level3">
+<h3 class="anchored" data-anchor-id="step-5.-remove-the-source-row-number-artifact">Step 5. Remove the source row-number artifact</h3>
+<p>The source may contain a column named <code>rownames</code>, which is an exported row index rather than a loan attribute. Remove it <strong>if present</strong>. This syntax avoids errors if the column is absent:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>loans_data <span class="op">=</span> loans_data.drop(columns<span class="op">=</span>[<span class="st">"rownames"</span>], errors<span class="op">=</span><span class="st">"ignore"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Check:</strong> Verify that <code>rownames</code> is absent from <code>loans_data.columns</code> and that the number of loan records has not changed.</p>
+</section>
+</section>
+<section id="part-2.-essential-pandas-subsetting-techniques" class="level2">
+<h2 class="anchored" data-anchor-id="part-2.-essential-pandas-subsetting-techniques">Part 2. Essential pandas subsetting techniques</h2>
+<p>Read the examples, then apply the same ideas <strong>independently</strong> in the five exercises. Examples use <em>illustrative variable names</em>, not answers to the assignment.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Operation</th>
+<th>pandas syntax</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Select columns</td>
+<td><code>df.loc[:, ["col_a", "col_b"]]</code></td>
+<td>Keep named fields</td>
+</tr>
+<tr class="even">
+<td>Select matching names</td>
+<td><code>df.filter(regex="pattern", axis=1)</code></td>
+<td>Choose columns by name pattern</td>
+</tr>
+<tr class="odd">
+<td>Filter rows</td>
+<td><code>df.loc[df["score"] &gt; 10]</code></td>
+<td>Keep observations meeting a rule</td>
+</tr>
+<tr class="even">
+<td>Any condition</td>
+<td><code>(condition_a) \| (condition_b)</code></td>
+<td>Logical OR</td>
+</tr>
+<tr class="odd">
+<td>All conditions</td>
+<td><code>(condition_a) &amp; (condition_b)</code></td>
+<td>Logical AND</td>
+</tr>
+<tr class="even">
+<td>Values in a set</td>
+<td><code>df["group"].isin(["A", "B"])</code></td>
+<td>Match multiple categories</td>
+</tr>
+<tr class="odd">
+<td>Rename a column</td>
+<td><code>df.rename(columns={"old": "new"})</code></td>
+<td>Improve variable clarity</td>
+</tr>
+<tr class="even">
+<td>Export</td>
+<td><code>df.to_csv(path, index=False)</code></td>
+<td>Write reusable CSV</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-tip callout-titled" title="Boolean filtering: essential syntax">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Boolean filtering: essential syntax
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use <code>&amp;</code>, <code>|</code>, and <code>~</code> with pandas Boolean Series, <strong>not</strong> Python’s scalar <code>and</code>, <code>or</code>, and <code>not</code>. Place each comparison in parentheses. Use <code>==</code> for equality, <code>&gt;</code> and <code>&lt;</code> for numeric thresholds, and <code>.isin(...)</code> for category membership.</p>
+</div>
+</div>
+<section id="export-and-validation-pattern" class="level3">
+<h3 class="anchored" data-anchor-id="export-and-validation-pattern">Export and validation pattern</h3>
+<p>For each extract, confirm the correct rows and columns <strong>before exporting</strong>. For example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Illustrative export pattern. Replace with your own subset variable.</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># your_subset.head()</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># your_subset.shape</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># your_subset.to_csv(output_dir / "your_subset.csv", index=False)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A sound validation includes the subset dimensions, column names, and a check that the stated selection rule is satisfied. Do not silently discard missing records unless the exercise requires it; describe how missing values affected the extract.</p>
+</section>
+</section>
+<section id="part-3.-create-and-export-five-data-subsets" class="level2">
+<h2 class="anchored" data-anchor-id="part-3.-create-and-export-five-data-subsets">Part 3. Create and export five data subsets</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="Requirements for each exercise">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Requirements for each exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Create the <strong>specified DataFrame variable name</strong>, perform the requested selection, preview and validate the result, and export a <strong>separate CSV</strong> into <code>outputs/</code> with <code>index=False</code>. All extracts should derive from the cleaned <code>loans_data</code> DataFrame.</p>
+</div>
+</div>
+<section id="exercise-1.-demographic-and-loan-information" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-1.-demographic-and-loan-information">Exercise 1. Demographic and loan information</h3>
+<p>Create <strong><code>demog_loan_info</code></strong> containing only:</p>
+<ul>
+<li>Employment title and length of employment.</li>
+<li>Borrower’s state and homeownership status.</li>
+<li>Loan amount, term, and interest rate.</li>
+</ul>
+<p>Consult the dictionary to find the exact column names. Rename <code>term</code> to <strong><code>loan_term_months</code></strong> in the extracted DataFrame. Export <strong><code>outputs/demog_loan_info.csv</code></strong>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here: select, rename, inspect, validate, and export.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Self-check:</strong> Does the extract contain exactly the requested attributes? Is <code>loan_term_months</code> present, with the original <code>term</code> name absent? Does its row count match the source, unless you explicitly justify a change?</p>
+</section>
+<section id="exercise-2.-credit-evaluation-variables" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-2.-credit-evaluation-variables">Exercise 2. Credit evaluation variables</h3>
+<p>Create <strong><code>credit_vars</code></strong> containing <strong>all columns whose names contain <code>credit</code></strong>, using pandas <strong><code>.filter(regex=..., axis=1)</code></strong>. Consider whether the match should be case-insensitive. Export <strong><code>outputs/credit_vars.csv</code></strong>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here: select credit-named fields, inspect, and export.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Self-check:</strong> List the selected column names and confirm each matches your intended search pattern. Note that column-name matching does not guarantee a field captures every aspect of creditworthiness.</p>
+</section>
+<section id="exercise-3.-high-income-borrowers" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-3.-high-income-borrowers">Exercise 3. High-income borrowers</h3>
+<p>Create <strong><code>high_income</code></strong> containing <strong>all columns but only rows where annual income is greater than $100,000</strong>. Use the exact annual-income variable in the supplied data dictionary. Export <strong><code>outputs/high_income.csv</code></strong>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here: filter rows, inspect, validate, and export.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Self-check:</strong> Is the threshold <strong>strictly greater than</strong> 100,000 rather than greater than or equal to? Have you retained all original analytical columns? How did your condition handle missing annual income?</p>
+</section>
+<section id="exercise-4.-high-risk-loans" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-4.-high-risk-loans">Exercise 4. High-risk loans</h3>
+<p>Create <strong><code>high_risk</code></strong> containing rows meeting <strong>at least one</strong> of the following assignment-defined criteria:</p>
+<ul>
+<li>Interest rate <strong>greater than 15%</strong>.</li>
+<li><strong>Individual</strong>, not joint, debt-to-income ratio <strong>greater than 30</strong>.</li>
+<li><strong>Any delinquencies</strong> during the past two years.</li>
+</ul>
+<p>Combine conditions using <strong>logical OR (<code>|</code>)</strong>. Retain all columns and export <strong><code>outputs/high_risk.csv</code></strong>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here: construct three Boolean conditions, combine with OR,</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># create high_risk, inspect, validate, and export.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Self-check:</strong> Are parentheses used around each condition? Are interest rate and debt-to-income thresholds expressed in the <strong>units actually stored in the CSV</strong>? If delinquency values are missing, how are those cases treated? Include a brief note explaining that this is an <strong>exercise-specific screening rule</strong>, not a validated credit risk model.</p>
+</section>
+<section id="exercise-5.-prime-borrowers" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-5.-prime-borrowers">Exercise 5. Prime borrowers</h3>
+<p>Create <strong><code>prime</code></strong> containing rows meeting <strong>all three</strong> assignment-defined criteria:</p>
+<ul>
+<li>Loan grade <strong>A or B</strong>.</li>
+<li>Individual debt-to-income ratio <strong>less than 20</strong>.</li>
+<li><strong>Zero</strong> delinquencies during the last two years.</li>
+</ul>
+<p>Use <code>.isin(...)</code> for the two accepted grade categories and combine the three conditions with <strong>logical AND (<code>&amp;</code>)</strong>. Retain all columns and export <strong><code>outputs/prime.csv</code></strong>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here: build the grade, DTI, and delinquency conditions,</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># combine with AND, create prime, inspect, validate, and export.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Self-check:</strong> Can a loan with grade C appear? Can an observation with a debt-to-income ratio exactly equal to 20 appear? Verify that any included loan has <strong>zero</strong>, rather than merely a missing value for, recent delinquencies. These labels are for this training assignment, not formal underwriting determinations.</p>
+</section>
+</section>
+<section id="part-4.-validate-and-document-your-outputs" class="level2">
+<h2 class="anchored" data-anchor-id="part-4.-validate-and-document-your-outputs">Part 4. Validate and document your outputs</h2>
+<p>In a <strong>text cell</strong>, briefly report the number of rows and columns in each extract, and explain any surprising result. You can use this compact validation pattern after completing all exercises:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run after your five DataFrames have been created.</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>subsets <span class="op">=</span> {</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"demog_loan_info"</span>: demog_loan_info,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"credit_vars"</span>: credit_vars,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"high_income"</span>: high_income,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"high_risk"</span>: high_risk,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prime"</span>: prime,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> pd.DataFrame(</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    [(name, df.shape[<span class="dv">0</span>], df.shape[<span class="dv">1</span>]) <span class="cf">for</span> name, df <span class="kw">in</span> subsets.items()],</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    columns<span class="op">=</span>[<span class="st">"Subset"</span>, <span class="st">"Rows"</span>, <span class="st">"Columns"</span>],</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>display(summary)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm all expected CSV outputs were written.</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> subsets:</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(name, (output_dir <span class="op">/</span> <span class="ss">f"</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">.csv"</span>).exists())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout callout-style-default callout-warning callout-titled" title="Interpretation matters">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Interpretation matters
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A dataset extract is only useful when its selection criteria are reproducible and its limitations understood. In your notebook, distinguish <strong>missing</strong> from <strong>zero</strong>, a percentage from a proportion, and an assignment-defined category from a real-world clinical or financial risk classification.</p>
+</div>
+</div>
+</section>
+<section id="part-5.-optional-challenge-one-excel-workbook-five-sheets" class="level2">
+<h2 class="anchored" data-anchor-id="part-5.-optional-challenge-one-excel-workbook-five-sheets">Part 5. Optional challenge: One Excel workbook, five sheets</h2>
+<p>Export your five completed subsets into one workbook, <strong><code>outputs/loan_subsets.xlsx</code></strong>, using <code>pd.ExcelWriter()</code> and the <code>openpyxl</code> engine. The following is a <strong>separate demonstration</strong>, not a completed solution to your assignment:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Demonstration with unrelated, small example DataFrames</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>example_a <span class="op">=</span> pd.DataFrame({<span class="st">"item"</span>: [<span class="st">"A"</span>, <span class="st">"B"</span>], <span class="st">"value"</span>: [<span class="dv">4</span>, <span class="dv">6</span>]})</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>example_b <span class="op">=</span> pd.DataFrame({<span class="st">"region"</span>: [<span class="st">"North"</span>, <span class="st">"South"</span>]})</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pd.ExcelWriter(output_dir <span class="op">/</span> <span class="st">"demo.xlsx"</span>, engine<span class="op">=</span><span class="st">"openpyxl"</span>) <span class="im">as</span> writer:</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    example_a.to_excel(writer, sheet_name<span class="op">=</span><span class="st">"Items"</span>, index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    example_b.to_excel(writer, sheet_name<span class="op">=</span><span class="st">"Regions"</span>, index<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Your task:</strong> Adapt the method to save each of the five loan subsets to its own clearly named worksheet. Google Colab usually includes <code>openpyxl</code>; if necessary, install it in a separate Colab cell using <code>%pip install openpyxl</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Your code here: export the five completed subsets to loan_subsets.xlsx.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Optional verification:</strong> Re-open the workbook with <code>pd.ExcelFile()</code> and inspect its sheet names.</p>
+</section>
+<section id="part-6.-submit-your-assignment" class="level2">
+<h2 class="anchored" data-anchor-id="part-6.-submit-your-assignment">Part 6. Submit your assignment</h2>
+<p>Submit <strong>Python script (<code>.py</code>)</strong> as instructed by your facilitator. Your submission should contain:</p>
+<ul>
+<li>The dataset import and source inspection.</li>
+<li>Removal of <code>rownames</code> when present.</li>
+<li>The five correctly named DataFrames and the code used to create them.</li>
+<li>Five CSV export statements to the <code>outputs/</code> directory.</li>
+<li>Meaningful validation checks and short notes on missing data or units.</li>
+<li>Optional: the multi-sheet Excel export code.</li>
+</ul>
+<p><strong>You do not need to submit the exported CSV or Excel files.</strong> Colab users can select <strong>File → Download → Download .ipynb</strong> to obtain a notebook file. If sharing a notebook link instead, verify that your instructor has permission to view it.</p>
+<section id="reflection-questions" class="level3">
+<h3 class="anchored" data-anchor-id="reflection-questions">Reflection questions</h3>
+<ol type="1">
+<li>When is selecting <strong>columns</strong> different from filtering <strong>rows</strong>?</li>
+<li>Why do Exercises 4 and 5 require different logical operators?</li>
+<li>How would you explain the difference between missing delinquency data and a recorded zero?</li>
+<li>Why might reusable, documented data extracts be important for a colleague who did not conduct the original analysis?</li>
+</ol>
+<div class="closing">
+<p><strong>SI Analytics | Data → Evidence → Insight → Action</strong></p>
+<p><em>Don’t just write code that runs. Create analytical outputs that someone else can trust and use.</em></p>
+<p><a href="https://www.sianalytics.org/">www.sianalytics.org</a></p>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

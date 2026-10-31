@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SI Analytics | Python Querying Rows Interactive Cheat Sheet</title>
+<style>
+:root{
+  --navy:#0F172A;--teal:#0F766E;--gold:#FACC15;--off:#F8FAFC;--soft-teal:#ECFDF5;
+  --soft-gold:#FEF9C3;--slate:#64748B;--rose:#BE123C;--green:#15803D;--ink:#1E293B;--zoom:1
+}
+*{box-sizing:border-box}
+html{background:#E2E8F0;scroll-behavior:smooth}
+body{margin:0;background:#E2E8F0;color:var(--ink);font-family:Inter,Arial,Helvetica,sans-serif;line-height:1.34}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.toolbar{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 18px;background:var(--navy);color:#fff;box-shadow:0 8px 20px rgba(15,23,42,.22)}
+.toolbar .instruction{flex:1 1 420px;font-size:13px;color:#E2E8F0}
+.toolbar .actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.toolbar button{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:800}
+.toolbar button:hover,.toolbar button:focus-visible{background:rgba(255,255,255,.18)}
+.toolbar .primary{background:var(--teal);border-color:#5EEAD4}
+.zoom-readout,.progress-readout{font-size:12px;color:#F8FAFC;border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.06);white-space:nowrap}
+.progress-shell{width:110px;height:7px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--gold);transition:width .2s ease}
+.sheet-stage{overflow:auto;padding:22px 0 48px}
+.sheet-wrap{transform:scale(var(--zoom));transform-origin:top center;width:calc(100% / var(--zoom))}
+.page{position:relative;width:min(210mm,calc(100vw - 24px));min-height:297mm;margin:0 auto 20px;padding:12mm 12mm 16mm;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.16);overflow:hidden}
+.page::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--navy) 0 58%,var(--teal) 58% 88%,var(--gold) 88%)}
+.page-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:8px}
+.brand{display:flex;align-items:center;gap:9px;min-width:142px}
+.brand img{width:112px;max-height:42px;object-fit:contain}
+.brand-fallback{display:none;font-size:13px;letter-spacing:.14em;color:var(--navy);font-weight:900}
+.page-kicker{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:var(--teal);margin-bottom:3px}
+h1{margin:0 0 4px;color:var(--navy);font-size:20px;line-height:1.1;letter-spacing:-.03em}
+.subtitle{margin:0;color:var(--slate);font-size:11px}
+.page-number{font-size:9px;color:var(--slate);white-space:nowrap;margin-top:3px}
+.intro-strip{display:grid;grid-template-columns:1.45fr 1fr;gap:8px;padding:8px 9px;border:1px solid #99F6E4;background:linear-gradient(90deg,var(--soft-teal),#fff);border-radius:10px;margin:7px 0 9px;font-size:9.2px}
+.intro-strip strong{color:var(--navy)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stack{display:grid;gap:7px}
+.card{break-inside:avoid;border:1px solid #D8E0E8;border-radius:10px;padding:8px;background:#fff}
+.card.soft{background:#F8FAFC}.card.teal{background:var(--soft-teal);border-color:#A7F3D0}.card.gold{background:#FFFBEB;border-color:#FDE68A}
+.card-title{display:flex;gap:7px;align-items:center;margin:0 0 5px;color:var(--navy);font-size:10.2px;text-transform:uppercase;letter-spacing:.07em;font-weight:900}
+.badge{display:inline-grid;place-items:center;width:18px;height:18px;flex:0 0 18px;border-radius:50%;background:var(--teal);color:#fff;font-size:9px}
+p{font-size:9.4px;margin:4px 0}.mini{font-size:8.5px;color:var(--slate);margin:3px 0}
+pre{white-space:pre-wrap;margin:5px 0;padding:6px 7px;border-radius:7px;background:#0B1220;color:#E2E8F0;font:8.05px/1.4 "SFMono-Regular",Consolas,monospace;border-left:3px solid var(--teal)}
+code{font-family:"SFMono-Regular",Consolas,monospace;color:#0F766E;font-size:.96em}
+.question{margin-top:5px;padding-top:5px;border-top:1px dashed #CBD5E1}
+.question:first-of-type{border-top:0;padding-top:0}
+.prompt{display:block;margin-bottom:4px;color:#334155;font-size:9.2px;font-weight:700}
+input.response,textarea.response,select.response{width:100%;border:1px solid #AAB8C7;border-radius:6px;padding:5px 6px;background:#fff;color:var(--navy);font-size:9px;outline:none}
+textarea.response{resize:vertical;min-height:39px;font-family:"SFMono-Regular",Consolas,monospace;line-height:1.3}
+input.response:focus,textarea.response:focus,select.response:focus,button:focus-visible{outline:3px solid rgba(250,204,21,.55);outline-offset:1px}
+.response.correct{border-color:var(--green);background:#F0FDF4}.response.incorrect{border-color:var(--rose);background:#FFF1F2}
+.flash{animation:correctFlash .55s ease}
+@keyframes correctFlash{0%{box-shadow:0 0 0 0 rgba(21,128,61,.5)}100%{box-shadow:0 0 0 6px rgba(21,128,61,0)}}
+.hint{display:block;margin-top:3px;color:var(--slate);font-size:8.2px}.hint.hidden{display:none}
+.feedback{display:none;margin-top:4px;font-size:8.4px;line-height:1.25}.feedback.show{display:block}.feedback.good{color:var(--green)}.feedback.bad{color:var(--rose)}
+.choice-group{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.choice-group button{border:1px solid #CBD5E1;color:#334155;background:#fff;border-radius:999px;padding:4px 7px;font-size:8.6px;font-weight:800}
+.choice-group button:hover{border-color:var(--teal)}.choice-group button.selected{border-color:var(--navy);background:#E2E8F0}.choice-group button.correct-choice{border-color:var(--green);background:#DCFCE7;color:#166534}.choice-group button.wrong-choice{border-color:var(--rose);background:#FFE4E6;color:#9F1239}
+table{width:100%;border-collapse:collapse;font-size:8.45px}th,td{border:1px solid #D8E0E8;padding:4px 5px;text-align:left;vertical-align:top}th{background:#F1F5F9;color:var(--navy)}
+.callout{margin-top:5px;padding:5px 7px;border-left:3px solid var(--gold);background:var(--soft-gold);font-size:8.4px}
+.footer{position:absolute;left:12mm;right:12mm;bottom:5mm;padding-top:4px;border-top:1px solid #CBD5E1;color:var(--slate);font-size:8px;text-align:center;letter-spacing:.03em}
+@media(max-width:760px){.page{width:calc(100vw - 12px);padding:10mm 8mm 15mm}.grid-2,.grid-3,.intro-strip{grid-template-columns:1fr}.footer{left:8mm;right:8mm}h1{font-size:18px}}
+@page{size:A4 portrait;margin:0}
+@media print{
+  html,body{background:#fff}.toolbar{display:none!important}.sheet-stage{padding:0;overflow:visible}.sheet-wrap{transform:none!important;width:100%!important}
+  .page{width:210mm;height:297mm;min-height:297mm;margin:0;padding:9mm 10mm 14mm;box-shadow:none;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto;break-after:auto}.footer{left:10mm;right:10mm;bottom:4mm}
+  .page-header{margin-bottom:5px}.intro-strip{margin:5px 0 6px;padding:5px 7px}.grid-2,.stack{gap:5px}
+  .card{padding:5px 6px;border-radius:7px}.card-title{font-size:8.7px;margin-bottom:3px}.badge{width:15px;height:15px;flex-basis:15px;font-size:7px}
+  h1{font-size:17px}p,.prompt{font-size:7.8px}.mini,.hint,.feedback,.choice-group button,.callout,table{font-size:7px}
+  pre{font-size:6.75px;padding:4px 5px;margin:3px 0}input.response,textarea.response,select.response{font-size:7.4px;padding:3px 4px}textarea.response{min-height:28px}.question{margin-top:3px;padding-top:3px}
+}
+</style>
+</head>
+<body>
+<aside class="toolbar" aria-label="Cheat sheet controls">
+  <div class="instruction">Complete the activities, check your understanding, and save your completed sheet as a PDF.</div>
+  <div class="actions">
+    <button type="button" id="zoomOut" aria-label="Zoom out">−</button>
+    <span class="zoom-readout" id="zoomReadout">100%</span>
+    <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+    <button type="button" id="toggleHints">Hide hints</button>
+    <button type="button" id="clearAnswers">Clear answers</button>
+    <button type="button" class="primary" id="printSheet">Print or Save PDF</button>
+    <span class="progress-readout" id="progressReadout">0 of 36 completed</span>
+    <span class="progress-shell"><span class="progress-bar" id="progressBar"></span></span>
+  </div>
+</aside>
+
+<main class="sheet-stage"><div class="sheet-wrap">
+
+<section class="page" aria-labelledby="p1">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p1">Python Cheat Sheet: Querying Rows</h1><p class="subtitle">Filtering records with query(), relational operators, and stored subsets</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 01 / 03</div></div>
+</header>
+<div class="intro-strip"><div><strong>Purpose.</strong> Use pandas <code>query()</code> to keep rows that satisfy clear, readable conditions.</div><div><strong>Core dataset.</strong> Examples use <code>yao</code>, a 971-row subset of the Yaoundé survey dataset.</div></div>
+
+<div class="grid-2">
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Introducing query()</h2>
+<pre>yao.query('sex == "Male"')
+
+yao_male = yao.query('sex == "Male"')</pre>
+<div class="question"><label class="prompt" for="q1">1. Which pandas method keeps rows that satisfy a condition?</label><input class="response" id="q1" data-item="q1" data-answer="query()" data-alt="query||DataFrame.query()" data-hint-options="query()|filter()|drop()|rename()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">2. “Inside <code>query()</code>, <code>==</code> tests equality.”</span><div class="choice-group" data-item="q2" data-answer="correct" data-explain="Use == for comparison. A single = is used for assignment."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">3. “Running <code>yao.query(...)</code> changes <code>yao</code> automatically.”</span><div class="choice-group" data-item="q3" data-answer="misconception" data-explain="Assign the query result if you want to store the subset."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q4">4. Store pregnant respondents in <code>yao_pregnant</code>.</label><textarea class="response" id="q4" data-item="q4" data-mode="code" data-answer='yao_pregnant = yao.query(\'is_pregnant == "Yes"\')' data-alt='yao_pregnant=yao.query("is_pregnant == \'Yes\'")'></textarea><span class="hint">Hint options: query where <code>is_pregnant</code> equals <code>"Yes"</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Count rows with shape</h2>
+<pre>yao.shape        # (971, 10)
+yao.shape[0]     # rows
+yao.shape[1]     # columns
+
+yao.query('sex == "Male"').shape[0]</pre>
+<div class="question"><label class="prompt" for="q5">5. Which expression returns the number of rows?</label><input class="response" id="q5" data-item="q5" data-answer="shape[0]" data-alt=".shape[0]" data-hint-options="shape[0]|shape[1]|query[0]|rows()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q6">6. Which expression returns the number of columns?</label><input class="response" id="q6" data-item="q6" data-answer="shape[1]" data-alt=".shape[1]" data-hint-options="shape[1]|shape[0]|columns[0]|count()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">7. “<code>yao.query('sex == "Male"').shape[0]</code> counts male respondents.”</span><div class="choice-group" data-item="q7" data-answer="correct" data-explain="The query returns male rows, and shape[0] returns the number of rows."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Relational operators</h2>
+<table>
+<tr><th>Operator</th><th>Meaning</th></tr>
+<tr><td><code>==</code></td><td>Equal to</td></tr>
+<tr><td><code>!=</code></td><td>Not equal to</td></tr>
+<tr><td><code>&lt;</code>, <code>&lt;=</code></td><td>Less than, at most</td></tr>
+<tr><td><code>&gt;</code>, <code>&gt;=</code></td><td>Greater than, at least</td></tr>
+<tr><td><code>.isin([...])</code></td><td>Appears in a defined set</td></tr>
+</table>
+<div class="question"><label class="prompt" for="q8">8. Keep respondents under 18 in <code>yao_children</code>.</label><input class="response" id="q8" data-item="q8" data-mode="code" data-answer='yao_children = yao.query("age &lt; 18")' data-alt="yao_children=yao.query('age &lt; 18')"><span class="hint">Hint options: use the less-than operator.</span><span class="feedback"></span></div>
+</article>
+</div>
+
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Membership tests with isin()</h2>
+<pre>yao.query(
+  'neighborhood.isin(["Tsinga", "Messa"])'
+)</pre>
+<div class="question"><label class="prompt" for="q9">9. Which method checks whether values appear in a defined list?</label><input class="response" id="q9" data-item="q9" data-answer="isin()" data-alt=".isin()||isin" data-hint-options="isin()|isna()|contains()|shape()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q10">10. Keep respondents from Carriere or Ekoudou in <code>yao_carriere_ekoudou</code>.</label><textarea class="response" id="q10" data-item="q10" data-mode="code" data-answer='yao_carriere_ekoudou = yao.query(\'neighborhood.isin(["Carriere", "Ekoudou"])\')' data-alt='yao_carriere_ekoudou=yao.query("neighborhood.isin([\'Carriere\',\'Ekoudou\'])")'></textarea><span class="hint">Hint options: use <code>neighborhood.isin([...])</code>.</span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">11. “<code>isin()</code> is useful when several acceptable values should be retained.”</span><div class="choice-group" data-item="q11" data-answer="correct" data-explain="It is cleaner than writing a long chain of equality checks."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> External variables with @</h2>
+<pre>min_age = 25
+yao.query("age >= @min_age")</pre>
+<div class="question"><label class="prompt" for="q12">12. Which symbol accesses an external Python variable inside <code>query()</code>?</label><input class="response" id="q12" data-item="q12" data-answer="@" data-hint-options="@|$|#|%"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q13">13. Given <code>max_age = 30</code>, keep respondents aged 30 or younger in <code>yao_young</code>.</label><textarea class="response" id="q13" data-item="q13" data-mode="code" data-answer='max_age = 30 yao_young = yao.query("age &lt;= @max_age")' data-alt='yao_young = yao.query("age &lt;= @max_age")||yao_young=yao.query(\'age &lt;= @max_age\')'></textarea><span class="hint">Hint options: use <code>@max_age</code> inside the query string.</span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">14. “External variables are helpful when threshold values may change at runtime.”</span><div class="choice-group" data-item="q14" data-answer="correct" data-explain="Using @ avoids hard-coding dynamic values inside the query string."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">F</span> Page 1 quick check</h2>
+<div class="question"><span class="prompt">15. Which query keeps people aged at least 70?</span><div class="choice-group" data-item="q15" data-answer="gte"><button type="button" data-choice="gt">yao.query("age > 70")</button><button type="button" data-choice="gte">yao.query("age >= 70")</button><button type="button" data-choice="lte">yao.query("age <= 70")</button></div><span class="feedback"></span></div>
+</article>
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p2">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p2">Python Cheat Sheet: Combining and Negating Conditions</h1><p class="subtitle">Using &, |, and ~ to define targeted subsets</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 02 / 03</div></div>
+</header>
+<div class="intro-strip"><div><strong>Purpose.</strong> Combine conditions carefully and negate entire logical expressions when you need to exclude selected rows.</div><div><strong>Core operators.</strong> <code>&amp;</code> means AND, <code>|</code> means OR, and <code>~</code> negates a condition.</div></div>
+
+<div class="grid-2">
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Combine conditions</h2>
+<pre>yao.query("age < 18 | age > 65")
+
+yao.query(
+  'is_pregnant == "Yes" & is_smoker == "Ex-smoker"'
+)</pre>
+<div class="question"><label class="prompt" for="q16">16. Which operator means AND?</label><input class="response" id="q16" data-item="q16" data-answer="&amp;" data-alt="and" data-hint-options="&amp;|||~|@"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q17">17. Which operator means OR?</label><input class="response" id="q17" data-item="q17" data-answer="|" data-alt="or" data-hint-options="||&amp;|~|@"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">18. “Use <code>&amp;</code> when both conditions must be true.”</span><div class="choice-group" data-item="q18" data-answer="correct" data-explain="AND retains rows only when both conditions are satisfied."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">19. “Use <code>|</code> when either condition may be true.”</span><div class="choice-group" data-item="q19" data-answer="correct" data-explain="OR retains rows when at least one condition is satisfied."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Apply combined logic</h2>
+<div class="question"><label class="prompt" for="q20">20. Keep men who tested IgG positive in <code>yao_igg_positive_men</code>.</label><textarea class="response" id="q20" data-item="q20" data-mode="code" data-answer='yao_igg_positive_men = yao.query(\'sex == "Male" & igg_result == "Positive"\')' data-alt='yao_igg_positive_men=yao.query("sex == \'Male\' & igg_result == \'Positive\'")'></textarea><span class="hint">Hint options: both conditions must be true.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q21">21. Keep respondents younger than 18 or older than 65.</label><input class="response" id="q21" data-item="q21" data-mode="code" data-answer='yao.query("age &lt; 18 | age > 65")' data-alt="yao.query('age &lt; 18 | age > 65')"><span class="hint">Hint options: use the OR operator.</span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">22. You need pregnant respondents or ex-smokers. Which operator is correct?</span><div class="choice-group" data-item="q22" data-answer="or"><button type="button" data-choice="and">&amp;</button><button type="button" data-choice="or">|</button><button type="button" data-choice="not">~</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Explore categories</h2>
+<pre>yao.is_smoker.value_counts()</pre>
+<div class="question"><label class="prompt" for="q23">23. Which method counts the distinct values in a column?</label><input class="response" id="q23" data-item="q23" data-answer="value_counts()" data-alt=".value_counts()||value_counts" data-hint-options="value_counts()|shape[0]|isna()|query()"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+</div>
+
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Negate with ~</h2>
+<pre>yao.query('~ (occupation == "Student")')
+
+yao.query("~ (age < 18 | weight_kg < 30)")</pre>
+<div class="question"><label class="prompt" for="q24">24. Which operator negates a condition inside <code>query()</code>?</label><input class="response" id="q24" data-item="q24" data-answer="~" data-hint-options="~|!|@|$"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">25. “When negating multiple conditions, place the expression inside parentheses.”</span><div class="choice-group" data-item="q25" data-answer="correct" data-explain="Parentheses clarify which logical expression is negated."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q26">26. Drop respondents who are above 50 or smokers. Store the result in <code>yao_dropped</code>.</label><textarea class="response" id="q26" data-item="q26" data-mode="code" data-answer='yao_dropped = yao.query(\'~ (age > 50 | is_smoker == "Smoker")\')' data-alt='yao_dropped=yao.query("~ (age > 50 | is_smoker == \'Smoker\')")'></textarea><span class="hint">Hint options: negate the entire OR expression.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> Equivalent logic</h2>
+<pre>yao.query("~ (age < 18 | weight_kg < 30)")
+
+yao.query("age >= 18 & weight_kg >= 30")</pre>
+<div class="question"><span class="prompt">27. “Negating <code>age &lt; 18 | weight_kg &lt; 30</code> is equivalent to requiring <code>age &gt;= 18 &amp; weight_kg &gt;= 30</code>.”</span><div class="choice-group" data-item="q27" data-answer="correct" data-explain="The two expressions represent complementary logic."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">28. Which pattern drops students?</span><div class="choice-group" data-item="q28" data-answer="negate"><button type="button" data-choice="keep">yao.query('occupation == "Student"')</button><button type="button" data-choice="negate">yao.query('~ (occupation == "Student")')</button><button type="button" data-choice="isin">yao.query('occupation.isin(["Student"])')</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">F</span> Page 2 quick check</h2>
+<table>
+<tr><th>Need</th><th>Use</th></tr>
+<tr><td>Both conditions required</td><td><code>&amp;</code></td></tr>
+<tr><td>Either condition accepted</td><td><code>|</code></td></tr>
+<tr><td>Exclude a condition</td><td><code>~ (...)</code></td></tr>
+<tr><td>Inspect category counts</td><td><code>value_counts()</code></td></tr>
+</table>
+</article>
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p3">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p3">Python Cheat Sheet: Missing Values and String Patterns</h1><p class="subtitle">Using isna(), notna(), and str.contains() for robust row queries</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 03 / 03</div></div>
+</header>
+<div class="intro-strip"><div><strong>Purpose.</strong> Handle missing values explicitly and search within text fields such as occupations and symptoms.</div><div><strong>Core patterns.</strong> <code>.isna()</code>, <code>.notna()</code>, and <code>.str.contains("pattern")</code></div></div>
+
+<div class="grid-2">
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Query missing values</h2>
+<pre>yao.query("is_pregnant.isna()")
+yao.query("is_pregnant.notna()")</pre>
+<div class="question"><span class="prompt">29. “<code>is_pregnant == NaN</code> is the recommended way to find missing values.”</span><div class="choice-group" data-item="q29" data-answer="misconception" data-explain="Use isna() because NaN is not compared with ordinary equality tests."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q30">30. Which method selects missing values?</label><input class="response" id="q30" data-item="q30" data-answer="isna()" data-alt=".isna()||isna" data-hint-options="isna()|notna()|isin()|contains()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q31">31. Which method selects non-missing values?</label><input class="response" id="q31" data-item="q31" data-answer="notna()" data-alt=".notna()||notna" data-hint-options="notna()|isna()|query()|shape()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q32">32. Keep respondents with missing smoking status.</label><input class="response" id="q32" data-item="q32" data-mode="code" data-answer='yao.query("is_smoker.isna()")' data-alt="yao.query('is_smoker.isna()')"><span class="hint">Hint options: use <code>is_smoker.isna()</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Query text patterns</h2>
+<pre>yao.query(
+  "occupation.str.contains('Student')"
+)
+
+yao.query(
+  "~occupation.str.contains('Student')"
+)</pre>
+<div class="question"><label class="prompt" for="q33">33. Which method checks whether a text field contains a substring?</label><input class="response" id="q33" data-item="q33" data-answer="str.contains()" data-alt=".str.contains()||str.contains" data-hint-options="str.contains()|isin()|isna()|value_counts()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">34. “<code>occupation.str.contains('Student')</code> finds both sole students and people with multiple occupations that include Student.”</span><div class="choice-group" data-item="q34" data-answer="correct" data-explain="Substring matching captures Student wherever it appears in the occupation text."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+</div>
+
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">C</span> Combine text patterns</h2>
+<pre>yao.query(
+  "occupation.str.contains('Student|Farmer')"
+)</pre>
+<div class="question"><span class="prompt">35. Which pattern finds respondents whose symptoms include Cough or Fever?</span><div class="choice-group" data-item="q35" data-answer="pipe"><button type="button" data-choice="amp">"Cough&amp;Fever"</button><button type="button" data-choice="pipe">"Cough|Fever"</button><button type="button" data-choice="comma">"Cough,Fever"</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q36">36. Query respondents who reported Cough or Fever.</label><textarea class="response" id="q36" data-item="q36" data-mode="code" data-answer='yao.query("symptoms.str.contains(\'Cough|Fever\')")' data-alt='yao.query(\'symptoms.str.contains("Cough|Fever")\')'></textarea><span class="hint">Hint options: place both symptom terms inside one <code>str.contains()</code> pattern separated by <code>|</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">D</span> Final readiness check</h2>
+<table>
+<tr><th>Question</th><th>Ask yourself</th></tr>
+<tr><td>Basic filtering</td><td>What exact condition belongs inside <code>query()</code>?</td></tr>
+<tr><td>Multiple conditions</td><td>Do I need AND, OR, or negation?</td></tr>
+<tr><td>Missing values</td><td>Should I use <code>isna()</code> or <code>notna()</code>?</td></tr>
+<tr><td>Text fields</td><td>Would <code>str.contains()</code> capture multi-answer values?</td></tr>
+</table>
+<div class="callout"><strong>Workshop readiness:</strong> revisit any rose-coloured response, then print or save your completed sheet as a PDF.</div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> Compact reference</h2>
+<table>
+<tr><th>Need</th><th>Pattern</th></tr>
+<tr><td>Keep rows</td><td><code>df.query("condition")</code></td></tr>
+<tr><td>External threshold</td><td><code>df.query("age &gt;= @min_age")</code></td></tr>
+<tr><td>Missing values</td><td><code>col.isna()</code>, <code>col.notna()</code></td></tr>
+<tr><td>Substring match</td><td><code>col.str.contains("term")</code></td></tr>
+<tr><td>Alternative substrings</td><td><code>col.str.contains("term1|term2")</code></td></tr>
+</table>
+</article>
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+</div></main>
+<script>
+(()=>{const K="siAnalyticsPythonQueryingRowsV1",S="siAnalyticsPythonQueryingRowsSettingsV1",R=[...document.querySelectorAll('.response')],G=[...document.querySelectorAll('.choice-group')],H=[...document.querySelectorAll('.hint')],I=[...R.filter(x=>x.dataset.item),...G.filter(x=>x.dataset.item)];let z=1,h=true;const n=(v,m='')=>{let x=(v||'').trim().toLowerCase().replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/\r/g,'');return m==='code'?x.replace(/\s+/g,'').replace(/;/g,''):x.replace(/\s+/g,' ')},a=e=>[e.dataset.answer||'',...(e.dataset.alt?e.dataset.alt.split('||'):[])].map(x=>n(x,e.dataset.mode)),f=(e,o,t='')=>{const q=e.parentElement.querySelector('.feedback')||e.nextElementSibling?.nextElementSibling;if(e.classList.contains('response')){e.classList.toggle('correct',o);e.classList.toggle('incorrect',!o);if(o){e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash')}}if(q){q.className=`feedback show ${o?'good':'bad'}`;q.textContent=t||(o?'Correct.':'Review this item and try again.')}},v=e=>{if(!e.value.trim()){e.classList.remove('correct','incorrect');const q=e.parentElement.querySelector('.feedback');if(q){q.className='feedback';q.textContent=''}return false}const o=a(e).includes(n(e.value,e.dataset.mode));f(e,o);return o},p=()=>{const d=I.filter(x=>x.classList.contains('response')?!!x.value.trim():!!x.dataset.selected).length,c=Math.round(d/I.length*100);document.getElementById('progressReadout').textContent=`${d} of ${I.length} completed • ${c}%`;document.getElementById('progressBar').style.width=`${c}%`},save=()=>{const s={};R.forEach(x=>s[x.id]=x.value);G.forEach((g,i)=>s[g.dataset.item||`g${i}`]=g.dataset.selected||'');localStorage.setItem(K,JSON.stringify(s));localStorage.setItem(S,JSON.stringify({zoom:z,hintsVisible:h}));p()},pick=(g,c)=>{g.dataset.selected=c;const o=c===g.dataset.answer;g.querySelectorAll('button').forEach(b=>{b.classList.remove('selected','correct-choice','wrong-choice');if(b.dataset.choice===c)b.classList.add('selected',o?'correct-choice':'wrong-choice')});const q=g.parentElement.querySelector('.feedback')||g.nextElementSibling;if(q){q.className=`feedback show ${o?'good':'bad'}`;q.textContent=o?'Correct.':(g.dataset.explain||'Review this concept and try again.')}save()},sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};R.forEach(e=>{const q=e.parentElement.querySelector('.hint')||e.nextElementSibling;if(q&&e.dataset.hintOptions)q.textContent=`Hint options: ${sh(e.dataset.hintOptions.split('|')).join('  •  ')}`;e.addEventListener('blur',()=>{v(e);save()});e.addEventListener('input',save);e.addEventListener('change',()=>{v(e);save()})});G.forEach(g=>g.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>pick(g,b.dataset.choice))));const az=()=>{document.documentElement.style.setProperty('--zoom',z);document.getElementById('zoomReadout').textContent=`${Math.round(z*100)}%`},ah=()=>{H.forEach(x=>x.classList.toggle('hidden',!h));document.getElementById('toggleHints').textContent=h?'Hide hints':'Show hints'};document.getElementById('zoomOut').onclick=()=>{z=Math.max(.7,+(z-.1).toFixed(1));az();save()};document.getElementById('zoomIn').onclick=()=>{z=Math.min(1.3,+(z+.1).toFixed(1));az();save()};document.getElementById('toggleHints').onclick=()=>{h=!h;ah();save()};document.getElementById('printSheet').onclick=()=>window.print();document.getElementById('clearAnswers').onclick=()=>{if(!confirm('Clear all saved responses from this browser?'))return;localStorage.removeItem(K);R.forEach(x=>{x.value='';x.classList.remove('correct','incorrect');const q=x.parentElement.querySelector('.feedback');if(q){q.className='feedback';q.textContent=''}});G.forEach(g=>{delete g.dataset.selected;g.querySelectorAll('button').forEach(b=>b.classList.remove('selected','correct-choice','wrong-choice'));const q=g.parentElement.querySelector('.feedback')||g.nextElementSibling;if(q){q.className='feedback';q.textContent=''}});p()};const restore=()=>{const s=JSON.parse(localStorage.getItem(K)||'{}');R.forEach(x=>{if(s[x.id]!==undefined){x.value=s[x.id];if(x.value.trim())v(x)}});G.forEach((g,i)=>{const k=g.dataset.item||`g${i}`;if(s[k])pick(g,s[k])});const t=JSON.parse(localStorage.getItem(S)||'{}');z=t.zoom||1;h=t.hintsVisible!==false;az();ah();p()};restore()})();
+</script>
+</body>
+</html>

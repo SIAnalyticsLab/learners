@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SI Analytics | Python Subsetting Columns Interactive Cheat Sheet</title>
+<style>
+:root{
+  --navy:#0F172A;--teal:#0F766E;--gold:#FACC15;--off:#F8FAFC;--soft-teal:#ECFDF5;
+  --soft-gold:#FEF9C3;--slate:#64748B;--rose:#BE123C;--green:#15803D;--ink:#1E293B;--zoom:1
+}
+*{box-sizing:border-box}
+html{background:#E2E8F0;scroll-behavior:smooth}
+body{margin:0;background:#E2E8F0;color:var(--ink);font-family:Inter,Arial,Helvetica,sans-serif;line-height:1.34}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.toolbar{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 18px;background:var(--navy);color:#fff;box-shadow:0 8px 20px rgba(15,23,42,.22)}
+.toolbar .instruction{flex:1 1 420px;font-size:13px;color:#E2E8F0}
+.toolbar .actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.toolbar button{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:800}
+.toolbar button:hover,.toolbar button:focus-visible{background:rgba(255,255,255,.18)}
+.toolbar .primary{background:var(--teal);border-color:#5EEAD4}
+.zoom-readout,.progress-readout{font-size:12px;color:#F8FAFC;border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.06);white-space:nowrap}
+.progress-shell{width:110px;height:7px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--gold);transition:width .2s ease}
+.sheet-stage{overflow:auto;padding:22px 0 48px}
+.sheet-wrap{transform:scale(var(--zoom));transform-origin:top center;width:calc(100% / var(--zoom))}
+.page{position:relative;width:min(210mm,calc(100vw - 24px));min-height:297mm;margin:0 auto 20px;padding:12mm 12mm 16mm;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.16);overflow:hidden}
+.page::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--navy) 0 58%,var(--teal) 58% 88%,var(--gold) 88%)}
+.page-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:8px}
+.brand{display:flex;align-items:center;gap:9px;min-width:142px}
+.brand img{width:112px;max-height:42px;object-fit:contain}
+.brand-fallback{display:none;font-size:13px;letter-spacing:.14em;color:var(--navy);font-weight:900}
+.page-kicker{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:var(--teal);margin-bottom:3px}
+h1{margin:0 0 4px;color:var(--navy);font-size:20px;line-height:1.1;letter-spacing:-.03em}
+.subtitle{margin:0;color:var(--slate);font-size:11px}
+.page-number{font-size:9px;color:var(--slate);white-space:nowrap;margin-top:3px}
+.intro-strip{display:grid;grid-template-columns:1.45fr 1fr;gap:8px;padding:8px 9px;border:1px solid #99F6E4;background:linear-gradient(90deg,var(--soft-teal),#fff);border-radius:10px;margin:7px 0 9px;font-size:9.2px}
+.intro-strip strong{color:var(--navy)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stack{display:grid;gap:7px}
+.card{break-inside:avoid;border:1px solid #D8E0E8;border-radius:10px;padding:8px;background:#fff}
+.card.soft{background:#F8FAFC}.card.teal{background:var(--soft-teal);border-color:#A7F3D0}.card.gold{background:#FFFBEB;border-color:#FDE68A}
+.card-title{display:flex;gap:7px;align-items:center;margin:0 0 5px;color:var(--navy);font-size:10.2px;text-transform:uppercase;letter-spacing:.07em;font-weight:900}
+.badge{display:inline-grid;place-items:center;width:18px;height:18px;flex:0 0 18px;border-radius:50%;background:var(--teal);color:#fff;font-size:9px}
+p{font-size:9.4px;margin:4px 0}.mini{font-size:8.5px;color:var(--slate);margin:3px 0}
+pre{white-space:pre-wrap;margin:5px 0;padding:6px 7px;border-radius:7px;background:#0B1220;color:#E2E8F0;font:8.05px/1.4 "SFMono-Regular",Consolas,monospace;border-left:3px solid var(--teal)}
+code{font-family:"SFMono-Regular",Consolas,monospace;color:#0F766E;font-size:.96em}
+.question{margin-top:5px;padding-top:5px;border-top:1px dashed #CBD5E1}
+.question:first-of-type{border-top:0;padding-top:0}
+.prompt{display:block;margin-bottom:4px;color:#334155;font-size:9.2px;font-weight:700}
+input.response,textarea.response,select.response{width:100%;border:1px solid #AAB8C7;border-radius:6px;padding:5px 6px;background:#fff;color:var(--navy);font-size:9px;outline:none}
+textarea.response{resize:vertical;min-height:39px;font-family:"SFMono-Regular",Consolas,monospace;line-height:1.3}
+input.response:focus,textarea.response:focus,select.response:focus,button:focus-visible{outline:3px solid rgba(250,204,21,.55);outline-offset:1px}
+.response.correct{border-color:var(--green);background:#F0FDF4}.response.incorrect{border-color:var(--rose);background:#FFF1F2}
+.flash{animation:correctFlash .55s ease}
+@keyframes correctFlash{0%{box-shadow:0 0 0 0 rgba(21,128,61,.5)}100%{box-shadow:0 0 0 6px rgba(21,128,61,0)}}
+.hint{display:block;margin-top:3px;color:var(--slate);font-size:8.2px}.hint.hidden{display:none}
+.feedback{display:none;margin-top:4px;font-size:8.4px;line-height:1.25}.feedback.show{display:block}.feedback.good{color:var(--green)}.feedback.bad{color:var(--rose)}
+.choice-group{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.choice-group button{border:1px solid #CBD5E1;color:#334155;background:#fff;border-radius:999px;padding:4px 7px;font-size:8.6px;font-weight:800}
+.choice-group button:hover{border-color:var(--teal)}.choice-group button.selected{border-color:var(--navy);background:#E2E8F0}.choice-group button.correct-choice{border-color:var(--green);background:#DCFCE7;color:#166534}.choice-group button.wrong-choice{border-color:var(--rose);background:#FFE4E6;color:#9F1239}
+table{width:100%;border-collapse:collapse;font-size:8.45px}th,td{border:1px solid #D8E0E8;padding:4px 5px;text-align:left;vertical-align:top}th{background:#F1F5F9;color:var(--navy)}
+.callout{margin-top:5px;padding:5px 7px;border-left:3px solid var(--gold);background:var(--soft-gold);font-size:8.4px}
+.footer{position:absolute;left:12mm;right:12mm;bottom:5mm;padding-top:4px;border-top:1px solid #CBD5E1;color:var(--slate);font-size:8px;text-align:center;letter-spacing:.03em}
+@media(max-width:760px){.page{width:calc(100vw - 12px);padding:10mm 8mm 15mm}.grid-2,.grid-3,.intro-strip{grid-template-columns:1fr}.footer{left:8mm;right:8mm}h1{font-size:18px}}
+@page{size:A4 portrait;margin:0}
+@media print{
+  html,body{background:#fff}.toolbar{display:none!important}.sheet-stage{padding:0;overflow:visible}.sheet-wrap{transform:none!important;width:100%!important}
+  .page{width:210mm;height:297mm;min-height:297mm;margin:0;padding:9mm 10mm 14mm;box-shadow:none;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto;break-after:auto}.footer{left:10mm;right:10mm;bottom:4mm}
+  .page-header{margin-bottom:5px}.intro-strip{margin:5px 0 6px;padding:5px 7px}.grid-2,.stack{gap:5px}
+  .card{padding:5px 6px;border-radius:7px}.card-title{font-size:8.7px;margin-bottom:3px}.badge{width:15px;height:15px;flex-basis:15px;font-size:7px}
+  h1{font-size:17px}p,.prompt{font-size:7.8px}.mini,.hint,.feedback,.choice-group button,.callout,table{font-size:7px}
+  pre{font-size:6.75px;padding:4px 5px;margin:3px 0}input.response,textarea.response,select.response{font-size:7.4px;padding:3px 4px}textarea.response{min-height:28px}.question{margin-top:3px;padding-top:3px}
+}
+</style>
+</head>
+<body>
+<aside class="toolbar" aria-label="Cheat sheet controls">
+  <div class="instruction">Complete the activities, check your understanding, and save your completed sheet as a PDF.</div>
+  <div class="actions">
+    <button type="button" id="zoomOut" aria-label="Zoom out">−</button>
+    <span class="zoom-readout" id="zoomReadout">100%</span>
+    <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+    <button type="button" id="toggleHints">Hide hints</button>
+    <button type="button" id="clearAnswers">Clear answers</button>
+    <button type="button" class="primary" id="printSheet">Print or Save PDF</button>
+    <span class="progress-readout" id="progressReadout">0 of 36 completed</span>
+    <span class="progress-shell"><span class="progress-bar" id="progressBar"></span></span>
+  </div>
+</aside>
+<main class="sheet-stage"><div class="sheet-wrap">
+
+<section class="page" aria-labelledby="p1">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p1">Python Cheat Sheet: Selecting Columns</h1><p class="subtitle">Using brackets, stored subsets, and drop() with confidence</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 01 / 03</div></div>
+</header>
+<div class="intro-strip"><div><strong>Purpose.</strong> Select the columns needed for an analysis and exclude the columns that are not needed.</div><div><strong>Core dataset.</strong> Examples use <code>yao</code>, loaded from <code>yaounde_data.csv</code>.</div></div>
+
+<div class="grid-2">
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Square brackets</h2>
+<pre>yao["age"]          # Series
+yao[["age"]]        # DataFrame
+yao[["age", "sex"]] # DataFrame</pre>
+<div class="question"><span class="prompt">1. “<code>yao["age"]</code> returns a pandas Series.”</span><div class="choice-group" data-item="q1" data-answer="correct" data-explain="Single-column selection with one pair of brackets returns a Series."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">2. “<code>yao[["age"]]</code> returns a one-column DataFrame.”</span><div class="choice-group" data-item="q2" data-answer="correct" data-explain="Double brackets keep the result as a DataFrame."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">3. Which expression selects <code>age</code> and <code>sex</code>?</span><div class="choice-group" data-item="q3" data-answer="double"><button type="button" data-choice="tuple">yao["age", "sex"]</button><button type="button" data-choice="double">yao[["age", "sex"]]</button><button type="button" data-choice="drop">yao.drop("age", "sex")</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q4">4. Select only <code>age</code> as a DataFrame.</label><input class="response" id="q4" data-item="q4" data-mode="code" data-answer='yao[["age"]]' data-alt="yao[['age']]" data-hint-options='yao[["age"]]|yao["age"]|yao.drop(columns=["age"])|yao.filter(regex="age")'><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Store subsets</h2>
+<pre>yao_subset = yao[[
+  "age", "sex", "igg_result"
+]]</pre>
+<div class="question"><span class="prompt">5. “Selecting columns changes the original DataFrame automatically.”</span><div class="choice-group" data-item="q5" data-answer="misconception" data-explain="The selection must be assigned if you want to store the subset or overwrite an object."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q6">6. Store <code>age</code>, <code>sex</code>, and <code>igg_result</code> in <code>yao_subset</code>.</label><textarea class="response" id="q6" data-item="q6" data-mode="code" data-answer='yao_subset = yao[["age", "sex", "igg_result"]]' data-alt="yao_subset=yao[['age','sex','igg_result']]"></textarea><span class="hint">Hint options: assign a double-bracket selection to <code>yao_subset</code>.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q7">7. Store <code>weight_kg</code> and <code>height_cm</code> in <code>yao_weight_height</code>.</label><textarea class="response" id="q7" data-item="q7" data-mode="code" data-answer='yao_weight_height = yao[["weight_kg", "height_cm"]]' data-alt="yao_weight_height=yao[['weight_kg','height_cm']]"></textarea><span class="hint">Hint options: keep both names inside a list.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Series versus DataFrame</h2>
+<table>
+<tr><th>Code</th><th>Result</th></tr>
+<tr><td><code>yao["age"]</code></td><td>Series</td></tr>
+<tr><td><code>yao[["age"]]</code></td><td>One-column DataFrame</td></tr>
+<tr><td><code>yao[["age", "sex"]]</code></td><td>Two-column DataFrame</td></tr>
+</table>
+<div class="question"><span class="prompt">8. You need a one-column DataFrame for later tabular operations. Choose the best expression.</span><div class="choice-group" data-item="q8" data-answer="df"><button type="button" data-choice="series">yao["age"]</button><button type="button" data-choice="df">yao[["age"]]</button><button type="button" data-choice="tuple">yao["age",]</button></div><span class="feedback"></span></div>
+</article>
+</div>
+
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Drop unwanted columns</h2>
+<pre>yao.drop(columns=["age"])
+yao.drop(columns=["age", "sex"])</pre>
+<div class="question"><label class="prompt" for="q9">9. Which method removes columns from a DataFrame result?</label><input class="response" id="q9" data-item="q9" data-answer="drop()" data-alt="drop||DataFrame.drop()" data-hint-options="drop()|filter()|rename()|read_csv()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q10">10. Which argument identifies the columns to remove?</label><input class="response" id="q10" data-item="q10" data-answer="columns" data-alt="columns =" data-hint-options="columns|regex|axis|names"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q11">11. Drop only <code>age</code>.</label><input class="response" id="q11" data-item="q11" data-mode="code" data-answer='yao.drop(columns=["age"])' data-alt="yao.drop(columns=['age'])"><span class="hint">Hint options: use <code>drop(columns=[...])</code>.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q12">12. Drop <code>age</code> and <code>sex</code>.</label><input class="response" id="q12" data-item="q12" data-mode="code" data-answer='yao.drop(columns=["age", "sex"])' data-alt="yao.drop(columns=['age','sex'])"><span class="hint">Hint options: list both unwanted columns.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> Store a dropped-column result</h2>
+<div class="question"><label class="prompt" for="q13">13. Create <code>yao_no_education_consultation</code> without <code>highest_education</code> and <code>consultation</code>.</label><textarea class="response" id="q13" data-item="q13" data-mode="code" data-answer='yao_no_education_consultation = yao.drop(columns=["highest_education", "consultation"])' data-alt="yao_no_education_consultation=yao.drop(columns=['highest_education','consultation'])"></textarea><span class="hint">Hint options: assign the <code>drop()</code> result to a new object.</span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">14. When is <code>drop()</code> usually preferable?</span><div class="choice-group" data-item="q14" data-answer="few"><button type="button" data-choice="few">When a few unwanted columns should be removed</button><button type="button" data-choice="rows">When filtering rows</button><button type="button" data-choice="merge">When joining DataFrames</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">F</span> Page 1 quick check</h2>
+<div class="question"><span class="prompt">15. “<code>yao["age", "sex"]</code> is valid syntax for selecting two columns.”</span><div class="choice-group" data-item="q15" data-answer="misconception" data-explain="Multiple columns should be provided inside a list: yao[[&quot;age&quot;, &quot;sex&quot;]]."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p2">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p2">Python Cheat Sheet: Pattern Selection and Renaming</h1><p class="subtitle">Using filter(), regex, and rename() to work efficiently</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 02 / 03</div></div>
+</header>
+<div class="intro-strip"><div><strong>Purpose.</strong> Select columns by name patterns and rename variables clearly for analysis-ready workflows.</div><div><strong>Core patterns.</strong> <code>filter(regex="...")</code> and <code>rename(columns={old: new})</code></div></div>
+
+<div class="grid-2">
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Regex-based selection</h2>
+<pre>yao.filter(regex="ig")       # contains ig
+yao.filter(regex="^ig")      # starts with ig
+yao.filter(regex="result$")  # ends with result</pre>
+<div class="question"><label class="prompt" for="q16">16. Which method selects columns using name patterns?</label><input class="response" id="q16" data-item="q16" data-answer="filter()" data-alt="filter||DataFrame.filter()" data-hint-options="filter()|drop()|rename()|query()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q17">17. Which argument accepts the regular-expression pattern?</label><input class="response" id="q17" data-item="q17" data-answer="regex" data-alt="regex =" data-hint-options="regex|columns|names|pattern"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q18">18. Which symbol matches the beginning of a column name?</label><input class="response" id="q18" data-item="q18" data-answer="^" data-hint-options="^|$|*|[]"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q19">19. Which symbol matches the end of a column name?</label><input class="response" id="q19" data-item="q19" data-answer="$" data-hint-options="$|^|@|_"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Apply regex selection</h2>
+<div class="question"><label class="prompt" for="q20">20. Select columns containing <code>ig</code>.</label><input class="response" id="q20" data-item="q20" data-mode="code" data-answer='yao.filter(regex="ig")' data-alt="yao.filter(regex='ig')"><span class="hint">Hint options: no anchor is needed for a contains search.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q21">21. Select columns beginning with <code>ig</code>.</label><input class="response" id="q21" data-item="q21" data-mode="code" data-answer='yao.filter(regex="^ig")' data-alt="yao.filter(regex='^ig')"><span class="hint">Hint options: use the start-of-string anchor.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q22">22. Select columns ending with <code>result</code>.</label><input class="response" id="q22" data-item="q22" data-mode="code" data-answer='yao.filter(regex="result$")' data-alt="yao.filter(regex='result$')"><span class="hint">Hint options: use the end-of-string anchor.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q23">23. Store every column beginning with <code>is_</code> in <code>yao_is_columns</code>.</label><textarea class="response" id="q23" data-item="q23" data-mode="code" data-answer='yao_is_columns = yao.filter(regex="^is_")' data-alt="yao_is_columns=yao.filter(regex='^is_')"></textarea><span class="hint">Hint options: assign a <code>filter(regex="^is_")</code> result.</span><span class="feedback"></span></div>
+</article>
+</div>
+
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">C</span> Rename columns</h2>
+<pre>yao.rename(columns={
+  "age": "patient_age",
+  "sex": "patient_sex"
+})</pre>
+<div class="question"><label class="prompt" for="q24">24. Which method changes column names?</label><input class="response" id="q24" data-item="q24" data-answer="rename()" data-alt="rename||DataFrame.rename()" data-hint-options="rename()|drop()|filter()|replace()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q25">25. Which argument receives the old-to-new name mapping?</label><input class="response" id="q25" data-item="q25" data-answer="columns" data-alt="columns =" data-hint-options="columns|regex|axis|names"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">26. “Inside <code>rename(columns={...})</code>, the dictionary maps old names to new names.”</span><div class="choice-group" data-item="q26" data-answer="correct" data-explain="The mapping is written as old_name: new_name."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q27">27. Rename <code>age_category</code> to <code>age_cat</code> in <code>yao_age_cat</code>.</label><textarea class="response" id="q27" data-item="q27" data-mode="code" data-answer='yao_age_cat = yao.rename(columns={"age_category": "age_cat"})' data-alt="yao_age_cat=yao.rename(columns={'age_category':'age_cat'})"></textarea><span class="hint">Hint options: assign the renamed DataFrame to <code>yao_age_cat</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">D</span> Choose the best tool</h2>
+<div class="question"><span class="prompt">28. You need 15 columns that all start with <code>is_</code>. Best approach?</span><div class="choice-group" data-item="q28" data-answer="filter"><button type="button" data-choice="manual">Type all column names manually</button><button type="button" data-choice="filter">Use filter(regex="^is_")</button><button type="button" data-choice="drop">Use drop(columns=["is_"])</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">29. You need to remove two unwanted columns but keep everything else. Best approach?</span><div class="choice-group" data-item="q29" data-answer="drop"><button type="button" data-choice="drop">Use drop(columns=[...])</button><button type="button" data-choice="filter">Use filter(regex="...")</button><button type="button" data-choice="rename">Use rename()</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">E</span> Rapid reference</h2>
+<table>
+<tr><th>Goal</th><th>Pattern</th></tr>
+<tr><td>Contains text</td><td><code>filter(regex="ig")</code></td></tr>
+<tr><td>Starts with text</td><td><code>filter(regex="^ig")</code></td></tr>
+<tr><td>Ends with text</td><td><code>filter(regex="result$")</code></td></tr>
+<tr><td>Rename</td><td><code>rename(columns={"old":"new"})</code></td></tr>
+</table>
+</article>
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p3">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p3">Python Cheat Sheet: Cleaning and Applied Practice</h1><p class="subtitle">Preparing usable column names and selecting the right subsetting strategy</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 03 / 03</div></div>
+</header>
+<div class="intro-strip"><div><strong>Purpose.</strong> Clean messy column names with regex and consolidate the key decisions required for reliable pandas subsetting.</div><div><strong>Core pattern.</strong> <code>df.columns.str.replace(pattern, "_", regex=True)</code></div></div>
+
+<div class="grid-2">
+<div class="stack">
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Clean messy names</h2>
+<pre>clean_names = test_df.columns.str.replace(
+  r"[^a-zA-Z0-9]",
+  "_",
+  regex=True
+)
+
+test_df.columns = clean_names</pre>
+<div class="question"><span class="prompt">30. “Messy column names can include spaces and special characters.”</span><div class="choice-group" data-item="q30" data-answer="correct" data-explain="Cleaning such names can make later selection and dot notation easier."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q31">31. Which chained method replaces characters in column names?</label><input class="response" id="q31" data-item="q31" data-answer="str.replace()" data-alt=".str.replace()||str.replace" data-hint-options="str.replace()|rename()|drop()|filter()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">32. What does <code>r"[^a-zA-Z0-9]"</code> match?</span><div class="choice-group" data-item="q32" data-answer="nonalpha"><button type="button" data-choice="letters">Letters only</button><button type="button" data-choice="numbers">Digits only</button><button type="button" data-choice="nonalpha">Non-alphanumeric characters</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q33">33. Clean the column names of <code>cleaning_practice</code> by replacing non-alphanumeric characters with underscores.</label><textarea class="response" id="q33" data-item="q33" data-mode="code" data-answer='cleaning_practice.columns = cleaning_practice.columns.str.replace(r"[^a-zA-Z0-9]", "_", regex=True)' data-alt="cleaning_practice.columns=cleaning_practice.columns.str.replace(r'[^a-zA-Z0-9]','_',regex=True)"></textarea><span class="hint">Hint options: assign the cleaned names back to <code>cleaning_practice.columns</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Common mistakes</h2>
+<div class="question"><span class="prompt">34. “<code>test_df.bad name</code> is valid dot notation.”</span><div class="choice-group" data-item="q34" data-answer="misconception" data-explain="Spaces break dot notation. Clean the names or use bracket notation."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">35. Which step must happen after creating <code>clean_names</code>?</span><div class="choice-group" data-item="q35" data-answer="assign"><button type="button" data-choice="assign">Assign clean_names back to df.columns</button><button type="button" data-choice="merge">Merge the DataFrame</button><button type="button" data-choice="pivot">Pivot the DataFrame</button></div><span class="feedback"></span></div>
+</article>
+</div>
+
+<div class="stack">
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Applied synthesis</h2>
+<div class="question"><label class="prompt" for="q36">36. Create a two-column DataFrame called <code>yao_antibody_results</code> that keeps only columns ending with <code>result</code>.</label><textarea class="response" id="q36" data-item="q36" data-mode="code" data-answer='yao_antibody_results = yao.filter(regex="result$")' data-alt="yao_antibody_results=yao.filter(regex='result$')"></textarea><span class="hint">Hint options: use the end-of-string anchor.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Decision guide</h2>
+<table>
+<tr><th>Situation</th><th>Use</th></tr>
+<tr><td>Keep a named set of columns</td><td><code>df[["a", "b"]]</code></td></tr>
+<tr><td>Keep one DataFrame column</td><td><code>df[["a"]]</code></td></tr>
+<tr><td>Remove a small set of columns</td><td><code>df.drop(columns=[...])</code></td></tr>
+<tr><td>Select columns by pattern</td><td><code>df.filter(regex="...")</code></td></tr>
+<tr><td>Rename columns</td><td><code>df.rename(columns={...})</code></td></tr>
+<tr><td>Clean special characters</td><td><code>df.columns.str.replace(...)</code></td></tr>
+</table>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">E</span> Final readiness check</h2>
+<table>
+<tr><th>Question</th><th>Ask yourself</th></tr>
+<tr><td>Output type</td><td>Do I need a Series or a DataFrame?</td></tr>
+<tr><td>Selection method</td><td>Am I keeping explicit names, dropping a few names, or matching a pattern?</td></tr>
+<tr><td>Assignment</td><td>Did I store the result if I need to reuse it?</td></tr>
+<tr><td>Name quality</td><td>Are spaces or special characters likely to cause problems?</td></tr>
+</table>
+<div class="callout"><strong>Workshop readiness:</strong> revisit any rose-coloured response, then print or save your completed sheet as a PDF.</div>
+</article>
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+</div></main>
+<script>
+(()=>{const K="siAnalyticsPythonSubsettingColumnsV2",S="siAnalyticsPythonSubsettingColumnsSettingsV2",R=[...document.querySelectorAll('.response')],G=[...document.querySelectorAll('.choice-group')],H=[...document.querySelectorAll('.hint')],I=[...R.filter(x=>x.dataset.item),...G.filter(x=>x.dataset.item)];let z=1,h=true;const n=(v,m='')=>{let x=(v||'').trim().toLowerCase().replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/\r/g,'');return m==='code'?x.replace(/\s+/g,'').replace(/;/g,''):x.replace(/\s+/g,' ')},a=e=>[e.dataset.answer||'',...(e.dataset.alt?e.dataset.alt.split('||'):[])].map(x=>n(x,e.dataset.mode)),f=(e,o,t='')=>{const q=e.parentElement.querySelector('.feedback')||e.nextElementSibling?.nextElementSibling;if(e.classList.contains('response')){e.classList.toggle('correct',o);e.classList.toggle('incorrect',!o);if(o){e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash')}}if(q){q.className=`feedback show ${o?'good':'bad'}`;q.textContent=t||(o?'Correct.':'Review this item and try again.')}},v=e=>{if(!e.value.trim()){e.classList.remove('correct','incorrect');const q=e.parentElement.querySelector('.feedback');if(q){q.className='feedback';q.textContent=''}return false}const o=a(e).includes(n(e.value,e.dataset.mode));f(e,o);return o},p=()=>{const d=I.filter(x=>x.classList.contains('response')?!!x.value.trim():!!x.dataset.selected).length,c=Math.round(d/I.length*100);document.getElementById('progressReadout').textContent=`${d} of ${I.length} completed • ${c}%`;document.getElementById('progressBar').style.width=`${c}%`},save=()=>{const s={};R.forEach(x=>s[x.id]=x.value);G.forEach((g,i)=>s[g.dataset.item||`g${i}`]=g.dataset.selected||'');localStorage.setItem(K,JSON.stringify(s));localStorage.setItem(S,JSON.stringify({zoom:z,hintsVisible:h}));p()},pick=(g,c)=>{g.dataset.selected=c;const o=c===g.dataset.answer;g.querySelectorAll('button').forEach(b=>{b.classList.remove('selected','correct-choice','wrong-choice');if(b.dataset.choice===c)b.classList.add('selected',o?'correct-choice':'wrong-choice')});const q=g.parentElement.querySelector('.feedback')||g.nextElementSibling;if(q){q.className=`feedback show ${o?'good':'bad'}`;q.textContent=o?'Correct.':(g.dataset.explain||'Review this concept and try again.')}save()},sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};R.forEach(e=>{const q=e.parentElement.querySelector('.hint')||e.nextElementSibling;if(q&&e.dataset.hintOptions)q.textContent=`Hint options: ${sh(e.dataset.hintOptions.split('|')).join('  •  ')}`;e.addEventListener('blur',()=>{v(e);save()});e.addEventListener('input',save);e.addEventListener('change',()=>{v(e);save()})});G.forEach(g=>g.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>pick(g,b.dataset.choice))));const az=()=>{document.documentElement.style.setProperty('--zoom',z);document.getElementById('zoomReadout').textContent=`${Math.round(z*100)}%`},ah=()=>{H.forEach(x=>x.classList.toggle('hidden',!h));document.getElementById('toggleHints').textContent=h?'Hide hints':'Show hints'};document.getElementById('zoomOut').onclick=()=>{z=Math.max(.7,+(z-.1).toFixed(1));az();save()};document.getElementById('zoomIn').onclick=()=>{z=Math.min(1.3,+(z+.1).toFixed(1));az();save()};document.getElementById('toggleHints').onclick=()=>{h=!h;ah();save()};document.getElementById('printSheet').onclick=()=>window.print();document.getElementById('clearAnswers').onclick=()=>{if(!confirm('Clear all saved responses from this browser?'))return;localStorage.removeItem(K);R.forEach(x=>{x.value='';x.classList.remove('correct','incorrect');const q=x.parentElement.querySelector('.feedback');if(q){q.className='feedback';q.textContent=''}});G.forEach(g=>{delete g.dataset.selected;g.querySelectorAll('button').forEach(b=>b.classList.remove('selected','correct-choice','wrong-choice'));const q=g.parentElement.querySelector('.feedback')||g.nextElementSibling;if(q){q.className='feedback';q.textContent=''}});p()};const restore=()=>{const s=JSON.parse(localStorage.getItem(K)||'{}');R.forEach(x=>{if(s[x.id]!==undefined){x.value=s[x.id];if(x.value.trim())v(x)}});G.forEach((g,i)=>{const k=g.dataset.item||`g${i}`;if(s[k])pick(g,s[k])});const t=JSON.parse(localStorage.getItem(S)||'{}');z=t.zoom||1;h=t.hintsVisible!==false;az();ah();p()};restore()})();
+</script>
+</body>
+</html>

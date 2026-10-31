@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SI Analytics | Grouping and Summarizing Data in pandas</title>
+<style>
+:root{
+  --navy:#0F172A;--teal:#0F766E;--gold:#FACC15;--off:#F8FAFC;--soft-teal:#ECFDF5;
+  --soft-gold:#FEF9C3;--slate:#64748B;--rose:#BE123C;--green:#15803D;--ink:#1E293B;--zoom:1
+}
+*{box-sizing:border-box}
+html{background:#E2E8F0;scroll-behavior:smooth}
+body{margin:0;background:#E2E8F0;color:var(--ink);font-family:Inter,Arial,Helvetica,sans-serif;line-height:1.34}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.toolbar{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 18px;background:var(--navy);color:#fff;box-shadow:0 8px 20px rgba(15,23,42,.22)}
+.toolbar .instruction{flex:1 1 420px;font-size:13px;color:#E2E8F0}
+.toolbar .actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.toolbar button{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:800}
+.toolbar button:hover,.toolbar button:focus-visible{background:rgba(255,255,255,.18)}
+.toolbar .primary{background:var(--teal);border-color:#5EEAD4}
+.zoom-readout,.progress-readout{font-size:12px;color:#F8FAFC;border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.06);white-space:nowrap}
+.progress-shell{width:110px;height:7px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--gold);transition:width .2s ease}
+.sheet-stage{overflow:auto;padding:22px 0 48px}
+.sheet-wrap{transform:scale(var(--zoom));transform-origin:top center;width:calc(100% / var(--zoom))}
+.page{position:relative;width:min(210mm,calc(100vw - 24px));min-height:297mm;margin:0 auto 20px;padding:12mm 12mm 16mm;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.16);overflow:hidden}
+.page::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--navy) 0 58%,var(--teal) 58% 88%,var(--gold) 88%)}
+.page-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:8px}
+.brand{display:flex;align-items:center;gap:9px;min-width:142px}
+.brand img{width:112px;max-height:42px;object-fit:contain}
+.brand-fallback{display:none;font-size:13px;letter-spacing:.14em;color:var(--navy);font-weight:900}
+.page-kicker{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:var(--teal);margin-bottom:3px}
+h1{margin:0 0 4px;color:var(--navy);font-size:20px;line-height:1.1;letter-spacing:-.03em}
+.subtitle{margin:0;color:var(--slate);font-size:11px}
+.page-number{font-size:9px;color:var(--slate);white-space:nowrap;margin-top:3px}
+.intro-strip{display:grid;grid-template-columns:1.45fr 1fr;gap:8px;padding:8px 9px;border:1px solid #99F6E4;background:linear-gradient(90deg,var(--soft-teal),#fff);border-radius:10px;margin:7px 0 9px;font-size:9.2px}
+.intro-strip strong{color:var(--navy)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stack{display:grid;gap:7px}
+.card{break-inside:avoid;border:1px solid #D8E0E8;border-radius:10px;padding:8px;background:#fff}
+.card.soft{background:#F8FAFC}.card.teal{background:var(--soft-teal);border-color:#A7F3D0}.card.gold{background:#FFFBEB;border-color:#FDE68A}
+.card-title{display:flex;gap:7px;align-items:center;margin:0 0 5px;color:var(--navy);font-size:10.2px;text-transform:uppercase;letter-spacing:.07em;font-weight:900}
+.badge{display:inline-grid;place-items:center;width:18px;height:18px;flex:0 0 18px;border-radius:50%;background:var(--teal);color:#fff;font-size:9px}
+p{font-size:9.4px;margin:4px 0}.mini{font-size:8.5px;color:var(--slate);margin:3px 0}
+pre{white-space:pre-wrap;margin:5px 0;padding:6px 7px;border-radius:7px;background:#0B1220;color:#E2E8F0;font:8.05px/1.4 "SFMono-Regular",Consolas,monospace;border-left:3px solid var(--teal)}
+code{font-family:"SFMono-Regular",Consolas,monospace;color:#0F766E;font-size:.96em}
+.question{margin-top:5px;padding-top:5px;border-top:1px dashed #CBD5E1}
+.question:first-of-type{border-top:0;padding-top:0}
+.prompt{display:block;margin-bottom:4px;color:#334155;font-size:9.2px;font-weight:700}
+input.response,textarea.response,select.response{width:100%;border:1px solid #AAB8C7;border-radius:6px;padding:5px 6px;background:#fff;color:var(--navy);font-size:9px;outline:none}
+textarea.response{resize:vertical;min-height:39px;font-family:"SFMono-Regular",Consolas,monospace;line-height:1.3}
+input.response:focus,textarea.response:focus,select.response:focus,button:focus-visible{outline:3px solid rgba(250,204,21,.55);outline-offset:1px}
+.response.correct{border-color:var(--green);background:#F0FDF4}.response.incorrect{border-color:var(--rose);background:#FFF1F2}
+.flash{animation:correctFlash .55s ease}
+@keyframes correctFlash{0%{box-shadow:0 0 0 0 rgba(21,128,61,.5)}100%{box-shadow:0 0 0 6px rgba(21,128,61,0)}}
+.hint{display:block;margin-top:3px;color:var(--slate);font-size:8.2px}.hint.hidden{display:none}
+.feedback{display:none;margin-top:4px;font-size:8.4px;line-height:1.25}.feedback.show{display:block}.feedback.good{color:var(--green)}.feedback.bad{color:var(--rose)}
+.choice-group{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.choice-group button{border:1px solid #CBD5E1;color:#334155;background:#fff;border-radius:999px;padding:4px 7px;font-size:8.6px;font-weight:800}
+.choice-group button:hover{border-color:var(--teal)}.choice-group button.selected{border-color:var(--navy);background:#E2E8F0}.choice-group button.correct-choice{border-color:var(--green);background:#DCFCE7;color:#166534}.choice-group button.wrong-choice{border-color:var(--rose);background:#FFE4E6;color:#9F1239}
+table{width:100%;border-collapse:collapse;font-size:8.45px}th,td{border:1px solid #D8E0E8;padding:4px 5px;text-align:left;vertical-align:top}th{background:#F1F5F9;color:var(--navy)}
+.callout{margin-top:5px;padding:5px 7px;border-left:3px solid var(--gold);background:var(--soft-gold);font-size:8.4px}
+.footer{position:absolute;left:12mm;right:12mm;bottom:5mm;padding-top:4px;border-top:1px solid #CBD5E1;color:var(--slate);font-size:8px;text-align:center;letter-spacing:.03em}
+@media(max-width:760px){.page{width:calc(100vw - 12px);padding:10mm 8mm 15mm}.grid-2,.grid-3,.intro-strip{grid-template-columns:1fr}.footer{left:8mm;right:8mm}h1{font-size:18px}}
+@page{size:A4 portrait;margin:0}
+@media print{
+  html,body{background:#fff}.toolbar{display:none!important}.sheet-stage{padding:0;overflow:visible}.sheet-wrap{transform:none!important;width:100%!important}
+  .page{width:210mm;height:297mm;min-height:297mm;margin:0;padding:9mm 10mm 14mm;box-shadow:none;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto;break-after:auto}.footer{left:10mm;right:10mm;bottom:4mm}
+  .page-header{margin-bottom:5px}.intro-strip{margin:5px 0 6px;padding:5px 7px}.grid-2,.stack{gap:5px}
+  .card{padding:5px 6px;border-radius:7px}.card-title{font-size:8.7px;margin-bottom:3px}.badge{width:15px;height:15px;flex-basis:15px;font-size:7px}
+  h1{font-size:17px}p,.prompt{font-size:7.8px}.mini,.hint,.feedback,.choice-group button,.callout,table{font-size:7px}
+  pre{font-size:6.75px;padding:4px 5px;margin:3px 0}input.response,textarea.response,select.response{font-size:7.4px;padding:3px 4px}textarea.response{min-height:28px}.question{margin-top:3px;padding-top:3px}
+}
+</style>
+</head>
+<body>
+<aside class="toolbar" aria-label="Cheat sheet controls">
+  <div class="instruction">Complete the activities, check your understanding, and save your completed sheet as a PDF.</div>
+  <div class="actions">
+    <button type="button" id="zoomOut" aria-label="Zoom out">−</button>
+    <span class="zoom-readout" id="zoomReadout">100%</span>
+    <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+    <button type="button" id="toggleHints">Hide hints</button>
+    <button type="button" id="clearAnswers">Clear answers</button>
+    <button type="button" class="primary" id="printSheet">Print or Save PDF</button>
+    <span class="progress-readout" id="progressReadout">0 of 36 completed</span>
+    <span class="progress-shell"><span class="progress-bar" id="progressBar"></span></span>
+  </div>
+</aside>
+
+<main class="sheet-stage"><div class="sheet-wrap">
+
+<section class="page" aria-labelledby="p1">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p1">Python Cheat Sheet: Summaries with agg()</h1><p class="subtitle">Extracting concise statistics from pandas DataFrames</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 01 / 03</div></div>
+</header>
+
+<div class="intro-strip">
+  <div><strong>Purpose.</strong> Use <code>DataFrame.agg()</code> to calculate named summary statistics clearly and efficiently.</div>
+  <div><strong>Core pattern.</strong> <code>df.agg(summary_name=("column", "function"))</code></div>
+</div>
+
+<div class="grid-2">
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Introducing agg()</h2>
+<pre>yao.agg(
+  mean_age=("age", "mean")
+)
+
+yao.agg(
+  mean_age=("age", "mean"),
+  median_age=("age", "median")
+)</pre>
+<div class="question"><label class="prompt" for="q1">1. Which pandas method extracts named summary statistics?</label><input class="response" id="q1" data-item="q1" data-answer="agg()" data-alt="agg||DataFrame.agg()" data-hint-options="agg()|groupby()|query()|reset_index()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">2. “A summary statistic is a single value that describes a sequence of values.”</span><div class="choice-group" data-item="q2" data-answer="correct" data-explain="Examples include means, medians, minima, maxima, and standard deviations."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">3. Inside <code>("age", "mean")</code>, what does <code>"age"</code> represent?</span><div class="choice-group" data-item="q3" data-answer="column"><button type="button" data-choice="column">Column to summarize</button><button type="button" data-choice="function">Summary function</button><button type="button" data-choice="group">Grouping variable</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">4. Inside <code>("age", "mean")</code>, what does <code>"mean"</code> represent?</span><div class="choice-group" data-item="q4" data-answer="function"><button type="button" data-choice="column">Column to summarize</button><button type="button" data-choice="function">Summary function</button><button type="button" data-choice="index">Index label</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Multiple statistics</h2>
+<div class="question"><span class="prompt">5. “One <code>agg()</code> call can calculate several summary statistics.”</span><div class="choice-group" data-item="q5" data-answer="correct" data-explain="Provide one named tuple for each requested statistic."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q6">6. Obtain the mean and median of <code>weight_kg</code>.</label><textarea class="response" id="q6" data-item="q6" data-mode="code" data-answer='yao.agg(mean_weight=("weight_kg", "mean"), median_weight=("weight_kg", "median"))' data-alt="yao.agg(mean_weight=('weight_kg','mean'),median_weight=('weight_kg','median'))"></textarea><span class="hint">Hint options: provide two named tuples inside one <code>agg()</code> call.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q7">7. Obtain minimum and maximum age.</label><textarea class="response" id="q7" data-item="q7" data-mode="code" data-answer='yao.agg(min_age=("age", "min"), max_age=("age", "max"))' data-alt="yao.agg(min_age=('age','min'),max_age=('age','max'))"></textarea><span class="hint">Hint options: use the built-in names <code>"min"</code> and <code>"max"</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Built-in summary functions</h2>
+<table>
+<tr><th>Function</th><th>Use</th></tr>
+<tr><td><code>"mean"</code></td><td>Arithmetic average</td></tr>
+<tr><td><code>"median"</code></td><td>Middle value</td></tr>
+<tr><td><code>"min"</code>, <code>"max"</code></td><td>Range limits</td></tr>
+<tr><td><code>"size"</code></td><td>Count rows per group</td></tr>
+</table>
+<div class="question"><span class="prompt">8. “Built-in aggregation functions are commonly passed as strings.”</span><div class="choice-group" data-item="q8" data-answer="correct" data-explain='Examples include "mean", "median", "min", "max", and "size".'><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+</div>
+
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Introducing groupby()</h2>
+<pre>yao.groupby("sex")
+
+yao.groupby("sex").agg(
+  mean_age=("age", "mean"),
+  median_age=("age", "median")
+)</pre>
+<div class="question"><label class="prompt" for="q9">9. Which method splits a DataFrame into groups?</label><input class="response" id="q9" data-item="q9" data-answer="groupby()" data-alt="groupby||DataFrame.groupby()" data-hint-options="groupby()|agg()|query()|sort_values()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">10. “Calling <code>groupby()</code> by itself returns a GroupBy object.”</span><div class="choice-group" data-item="q10" data-answer="correct" data-explain="Chain another operation, such as agg(), to produce a summary table."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q11">11. Calculate mean and median age by sex.</label><textarea class="response" id="q11" data-item="q11" data-mode="code" data-answer='yao.groupby("sex").agg(mean_age=("age", "mean"), median_age=("age", "median"))' data-alt="yao.groupby('sex').agg(mean_age=('age','mean'),median_age=('age','median'))"></textarea><span class="hint">Hint options: group first, then aggregate.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> Return regular columns</h2>
+<pre>(
+  yao.groupby("sex")
+  .agg(
+    mean_age=("age", "mean"),
+    median_age=("age", "median")
+  )
+  .reset_index()
+)</pre>
+<div class="question"><label class="prompt" for="q12">12. Which method restores group labels as regular columns?</label><input class="response" id="q12" data-item="q12" data-answer="reset_index()" data-alt=".reset_index()||reset_index" data-hint-options="reset_index()|groupby()|agg()|size()"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">F</span> Page 1 rapid reference</h2>
+<table>
+<tr><th>Need</th><th>Pattern</th></tr>
+<tr><td>Quick statistics</td><td><code>df.agg(...)</code></td></tr>
+<tr><td>Statistics by category</td><td><code>df.groupby("category").agg(...)</code></td></tr>
+<tr><td>Regular group columns</td><td><code>.reset_index()</code></td></tr>
+</table>
+</article>
+
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p2">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p2">Python Cheat Sheet: Grouped Summaries</h1><p class="subtitle">Counting rows, nested grouping, and handling missing groups</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 02 / 03</div></div>
+</header>
+
+<div class="intro-strip">
+  <div><strong>Purpose.</strong> Produce analysis-ready grouped summaries that include useful counts and retain missing-value groups when needed.</div>
+  <div><strong>Core tools.</strong> <code>"size"</code>, multiple grouping columns, <code>dropna=False</code>, and <code>reset_index()</code></div>
+</div>
+
+<div class="grid-2">
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Count rows per group</h2>
+<pre>(
+  yao.groupby("neighborhood")
+  .agg(
+    max_weight=("weight_kg", "max"),
+    min_weight=("weight_kg", "min"),
+    count=("weight_kg", "size")
+  )
+  .reset_index()
+)</pre>
+<div class="question"><label class="prompt" for="q13">13. Which built-in aggregation counts rows per group?</label><input class="response" id="q13" data-item="q13" data-answer="size" data-alt='"size"||size()' data-hint-options="size|mean|count|reset_index"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">14. “Including a count helps interpret how many observations support each statistic.”</span><div class="choice-group" data-item="q14" data-answer="correct" data-explain="A mean based on two records should be interpreted differently from a mean based on hundreds of records."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q15">15. Calculate min height, max height, and count for each sex.</label><textarea class="response" id="q15" data-item="q15" data-mode="code" data-answer='yao.groupby("sex").agg(min_height_cm=("height_cm", "min"), max_height_cm=("height_cm", "max"), count=("height_cm", "size")).reset_index()' data-alt="yao.groupby('sex').agg(min_height_cm=('height_cm','min'),max_height_cm=('height_cm','max'),count=('height_cm','size')).reset_index()"></textarea><span class="hint">Hint options: group by <code>sex</code>, aggregate three named outputs, then reset the index.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Nested grouping</h2>
+<pre>(
+  yao.groupby(["sex", "neighborhood"])
+  .agg(mean_age=("age", "mean"))
+  .reset_index()
+)</pre>
+<div class="question"><span class="prompt">16. “Passing a list to <code>groupby()</code> creates grouping by multiple variables.”</span><div class="choice-group" data-item="q16" data-answer="correct" data-explain="This is often called nested grouping."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q17">17. Group by sex and neighborhood, then calculate mean age.</label><textarea class="response" id="q17" data-item="q17" data-mode="code" data-answer='yao.groupby(["sex", "neighborhood"]).agg(mean_age=("age", "mean")).reset_index()' data-alt="yao.groupby(['sex','neighborhood']).agg(mean_age=('age','mean')).reset_index()"></textarea><span class="hint">Hint options: place both grouping variables inside a list.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q18">18. Calculate minimum and maximum height for each age-category and sex group.</label><textarea class="response" id="q18" data-item="q18" data-mode="code" data-answer='yao.groupby(["age_category_3", "sex"]).agg(min_height=("height_cm", "min"), max_height=("height_cm", "max")).reset_index()' data-alt="yao.groupby(['age_category_3','sex']).agg(min_height=('height_cm','min'),max_height=('height_cm','max')).reset_index()"></textarea><span class="hint">Hint options: group by <code>age_category_3</code> and <code>sex</code>.</span><span class="feedback"></span></div>
+</article>
+
+</div>
+
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">C</span> Include NaN groups</h2>
+<pre>(
+  yao.groupby("is_smoker", dropna=False)
+  .agg(
+    weight_mean=("weight_kg", "mean"),
+    count=("weight_kg", "size")
+  )
+  .reset_index()
+)</pre>
+<div class="question"><label class="prompt" for="q19">19. Which <code>groupby()</code> argument retains NaN groups?</label><input class="response" id="q19" data-item="q19" data-answer="dropna=False" data-alt="dropna = False" data-hint-options="dropna=False|dropna=True|na.rm=True|skipna=False"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">20. “By default, <code>groupby()</code> can exclude NaN group labels.”</span><div class="choice-group" data-item="q20" data-answer="correct" data-explain="Use dropna=False if missing-value categories should appear in the summary table."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q21">21. Calculate mean weight by pregnancy status, including NaN groups.</label><textarea class="response" id="q21" data-item="q21" data-mode="code" data-answer='yao.groupby("is_pregnant", dropna=False).agg(weight_mean=("weight_kg", "mean")).reset_index()' data-alt="yao.groupby('is_pregnant',dropna=False).agg(weight_mean=('weight_kg','mean')).reset_index()"></textarea><span class="hint">Hint options: set <code>dropna=False</code> inside <code>groupby()</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">D</span> Readable method chains</h2>
+<pre>(
+  yao.groupby("sex")
+  .agg(
+    mean_age=("age", "mean"),
+    median_age=("age", "median")
+  )
+  .reset_index()
+)</pre>
+<div class="question"><span class="prompt">22. “Wrapping a method chain in parentheses makes multi-line pandas code easier to read.”</span><div class="choice-group" data-item="q22" data-answer="correct" data-explain="Each method can start on a new line while remaining part of the same expression."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">23. Why use <code>reset_index()</code> after grouped aggregation?</span><div class="choice-group" data-item="q23" data-answer="regular"><button type="button" data-choice="regular">Return group labels as regular columns</button><button type="button" data-choice="drop">Delete the grouping variables</button><button type="button" data-choice="sort">Sort the summary table</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">E</span> Apply complete grouped logic</h2>
+<div class="question"><label class="prompt" for="q24">24. Summarize smoking status with mean weight and count, retaining NaN groups.</label><textarea class="response" id="q24" data-item="q24" data-mode="code" data-answer='yao.groupby("is_smoker", dropna=False).agg(weight_mean=("weight_kg", "mean"), count=("weight_kg", "size")).reset_index()' data-alt="yao.groupby('is_smoker',dropna=False).agg(weight_mean=('weight_kg','mean'),count=('weight_kg','size')).reset_index()"></textarea><span class="hint">Hint options: include <code>dropna=False</code>, <code>"mean"</code>, <code>"size"</code>, and <code>reset_index()</code>.</span><span class="feedback"></span></div>
+</article>
+
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p3">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python data wrangling</div><h1 id="p3">Python Cheat Sheet: Custom Summary Statistics</h1><p class="subtitle">Using lambda functions and applied grouped-analysis patterns</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 03 / 03</div></div>
+</header>
+
+<div class="intro-strip">
+  <div><strong>Purpose.</strong> Extend <code>agg()</code> with custom functions for statistics such as ranges, coefficients of variation, and interquartile ranges.</div>
+  <div><strong>Core pattern.</strong> <code>agg(new_stat=("column", lambda x: ...))</code></div>
+</div>
+
+<div class="grid-2">
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Lambda fundamentals</h2>
+<pre>range_func = lambda x: max(x) - min(x)
+
+range_func([1, 2, 3, 4])
+# 3</pre>
+<div class="question"><label class="prompt" for="q25">25. Which keyword defines a small anonymous Python function?</label><input class="response" id="q25" data-item="q25" data-answer="lambda" data-hint-options="lambda|def|agg|groupby"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">26. “A lambda function can be passed directly to <code>agg()</code>.”</span><div class="choice-group" data-item="q26" data-answer="correct" data-explain="This is useful for compact custom summary statistics."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q27">27. Complete a lambda that calculates a range.</label><input class="response" id="q27" data-item="q27" data-mode="code" data-answer="lambda x: max(x) - min(x)" data-alt="lambda x:max(x)-min(x)"><span class="hint">Hint options: maximum minus minimum.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Apply a custom range</h2>
+<pre>(
+  yao.groupby("neighborhood")
+  .agg(
+    weight_range=(
+      "weight_kg",
+      lambda x: max(x) - min(x)
+    )
+  )
+  .reset_index()
+)</pre>
+<div class="question"><span class="prompt">28. “Custom functions are passed without quotation marks.”</span><div class="choice-group" data-item="q28" data-answer="correct" data-explain="A lambda or named Python function is passed as an executable function object."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q29">29. Calculate weight range by neighborhood.</label><textarea class="response" id="q29" data-item="q29" data-mode="code" data-answer='yao.groupby("neighborhood").agg(weight_range=("weight_kg", lambda x: max(x) - min(x))).reset_index()' data-alt="yao.groupby('neighborhood').agg(weight_range=('weight_kg',lambda x:max(x)-min(x))).reset_index()"></textarea><span class="hint">Hint options: group by neighborhood and pass the range lambda without quotes.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Coefficient of variation</h2>
+<pre>(
+  yao.groupby("neighborhood")
+  .agg(
+    weight_cv=(
+      "weight_kg",
+      lambda x: (np.std(x) / np.mean(x)) * 100
+    )
+  )
+  .reset_index()
+)</pre>
+<div class="question"><span class="prompt">30. Which formula represents the coefficient of variation?</span><div class="choice-group" data-item="q30" data-answer="cv"><button type="button" data-choice="cv">standard deviation / mean × 100</button><button type="button" data-choice="range">maximum - minimum</button><button type="button" data-choice="iqr">75th percentile - 25th percentile</button></div><span class="feedback"></span></div>
+</article>
+
+</div>
+
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Interquartile range</h2>
+<pre>lambda x: (
+  x.quantile(0.75) -
+  x.quantile(0.25)
+)</pre>
+<div class="question"><span class="prompt">31. “The IQR is the 75th percentile minus the 25th percentile.”</span><div class="choice-group" data-item="q31" data-answer="correct" data-explain="This measures the spread of the middle 50% of values."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q32">32. Write the lambda for the IQR.</label><input class="response" id="q32" data-item="q32" data-mode="code" data-answer="lambda x: x.quantile(0.75) - x.quantile(0.25)" data-alt="lambda x:x.quantile(0.75)-x.quantile(0.25)"><span class="hint">Hint options: subtract the 25th percentile from the 75th percentile.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q33">33. Calculate age IQR by neighborhood.</label><textarea class="response" id="q33" data-item="q33" data-mode="code" data-answer='yao.groupby("neighborhood").agg(age_iqr=("age", lambda x: x.quantile(0.75) - x.quantile(0.25))).reset_index()' data-alt="yao.groupby('neighborhood').agg(age_iqr=('age',lambda x:x.quantile(0.75)-x.quantile(0.25))).reset_index()"></textarea><span class="hint">Hint options: group by neighborhood, summarize <code>age</code>, then reset the index.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> Applied synthesis</h2>
+<div class="question"><label class="prompt" for="q34">34. Calculate mean age by sex and neighborhood.</label><textarea class="response" id="q34" data-item="q34" data-mode="code" data-answer='yao.groupby(["sex", "neighborhood"]).agg(mean_age=("age", "mean")).reset_index()' data-alt="yao.groupby(['sex','neighborhood']).agg(mean_age=('age','mean')).reset_index()"></textarea><span class="hint">Hint options: group by two columns and use the built-in mean summary.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q35">35. Calculate mean, median, and count of missed work days by occupation.</label><textarea class="response" id="q35" data-item="q35" data-mode="code" data-answer='yao.groupby("occupation").agg(mean_days=("n_days_miss_work", "mean"), median_days=("n_days_miss_work", "median"), count=("n_days_miss_work", "size")).reset_index()' data-alt="yao.groupby('occupation').agg(mean_days=('n_days_miss_work','mean'),median_days=('n_days_miss_work','median'),count=('n_days_miss_work','size')).reset_index()"></textarea><span class="hint">Hint options: include three named aggregations and reset the index.</span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">36. Which sequence is most appropriate for an analysis-ready grouped summary?</span><div class="choice-group" data-item="q36" data-answer="flow"><button type="button" data-choice="flow">groupby() → agg() → reset_index()</button><button type="button" data-choice="reverse">reset_index() → groupby() → agg()</button><button type="button" data-choice="query">query() → drop() → rename()</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">F</span> Final readiness check</h2>
+<table>
+<tr><th>Question</th><th>Ask yourself</th></tr>
+<tr><td>Summary need</td><td>Which column and summary function belong in each tuple?</td></tr>
+<tr><td>Grouping level</td><td>Do I need one grouping column or a list of columns?</td></tr>
+<tr><td>Missing groups</td><td>Should <code>dropna=False</code> be included?</td></tr>
+<tr><td>Custom statistic</td><td>Would a named function or lambda improve the summary?</td></tr>
+</table>
+<div class="callout"><strong>Workshop readiness:</strong> revisit any rose-coloured response, then print or save your completed sheet as a PDF.</div>
+</article>
+
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+</div></main>
+<script>
+(()=>{const K="siAnalyticsPythonGroupSummarizeV1",S="siAnalyticsPythonGroupSummarizeSettingsV1",R=[...document.querySelectorAll('.response')],G=[...document.querySelectorAll('.choice-group')],H=[...document.querySelectorAll('.hint')],I=[...R.filter(x=>x.dataset.item),...G.filter(x=>x.dataset.item)];let z=1,h=true;const n=(v,m='')=>{let x=(v||'').trim().toLowerCase().replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/\r/g,'');return m==='code'?x.replace(/\s+/g,'').replace(/;/g,''):x.replace(/\s+/g,' ')},a=e=>[e.dataset.answer||'',...(e.dataset.alt?e.dataset.alt.split('||'):[])].map(x=>n(x,e.dataset.mode)),f=(e,o,t='')=>{const q=e.parentElement.querySelector('.feedback')||e.nextElementSibling?.nextElementSibling;if(e.classList.contains('response')){e.classList.toggle('correct',o);e.classList.toggle('incorrect',!o);if(o){e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash')}}if(q){q.className=`feedback show ${o?'good':'bad'}`;q.textContent=t||(o?'Correct.':'Review this item and try again.')}},v=e=>{if(!e.value.trim()){e.classList.remove('correct','incorrect');const q=e.parentElement.querySelector('.feedback');if(q){q.className='feedback';q.textContent=''}return false}const o=a(e).includes(n(e.value,e.dataset.mode));f(e,o);return o},p=()=>{const d=I.filter(x=>x.classList.contains('response')?!!x.value.trim():!!x.dataset.selected).length,c=Math.round(d/I.length*100);document.getElementById('progressReadout').textContent=`${d} of ${I.length} completed • ${c}%`;document.getElementById('progressBar').style.width=`${c}%`},save=()=>{const s={};R.forEach(x=>s[x.id]=x.value);G.forEach((g,i)=>s[g.dataset.item||`g${i}`]=g.dataset.selected||'');localStorage.setItem(K,JSON.stringify(s));localStorage.setItem(S,JSON.stringify({zoom:z,hintsVisible:h}));p()},pick=(g,c)=>{g.dataset.selected=c;const o=c===g.dataset.answer;g.querySelectorAll('button').forEach(b=>{b.classList.remove('selected','correct-choice','wrong-choice');if(b.dataset.choice===c)b.classList.add('selected',o?'correct-choice':'wrong-choice')});const q=g.parentElement.querySelector('.feedback')||g.nextElementSibling;if(q){q.className=`feedback show ${o?'good':'bad'}`;q.textContent=o?'Correct.':(g.dataset.explain||'Review this concept and try again.')}save()},sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};R.forEach(e=>{const q=e.parentElement.querySelector('.hint')||e.nextElementSibling;if(q&&e.dataset.hintOptions)q.textContent=`Hint options: ${sh(e.dataset.hintOptions.split('|')).join('  •  ')}`;e.addEventListener('blur',()=>{v(e);save()});e.addEventListener('input',save);e.addEventListener('change',()=>{v(e);save()})});G.forEach(g=>g.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>pick(g,b.dataset.choice))));const az=()=>{document.documentElement.style.setProperty('--zoom',z);document.getElementById('zoomReadout').textContent=`${Math.round(z*100)}%`},ah=()=>{H.forEach(x=>x.classList.toggle('hidden',!h));document.getElementById('toggleHints').textContent=h?'Hide hints':'Show hints'};document.getElementById('zoomOut').onclick=()=>{z=Math.max(.7,+(z-.1).toFixed(1));az();save()};document.getElementById('zoomIn').onclick=()=>{z=Math.min(1.3,+(z+.1).toFixed(1));az();save()};document.getElementById('toggleHints').onclick=()=>{h=!h;ah();save()};document.getElementById('printSheet').onclick=()=>window.print();document.getElementById('clearAnswers').onclick=()=>{if(!confirm('Clear all saved responses from this browser?'))return;localStorage.removeItem(K);R.forEach(x=>{x.value='';x.classList.remove('correct','incorrect');const q=x.parentElement.querySelector('.feedback');if(q){q.className='feedback';q.textContent=''}});G.forEach(g=>{delete g.dataset.selected;g.querySelectorAll('button').forEach(b=>b.classList.remove('selected','correct-choice','wrong-choice'));const q=g.parentElement.querySelector('.feedback')||g.nextElementSibling;if(q){q.className='feedback';q.textContent=''}});p()};const restore=()=>{const s=JSON.parse(localStorage.getItem(K)||'{}');R.forEach(x=>{if(s[x.id]!==undefined){x.value=s[x.id];if(x.value.trim())v(x)}});G.forEach((g,i)=>{const k=g.dataset.item||`g${i}`;if(s[k])pick(g,s[k])});const t=JSON.parse(localStorage.getItem(S)||'{}');z=t.zoom||1;h=t.hintsVisible!==false;az();ah();p()};restore()})();
+</script>
+</body>
+</html>

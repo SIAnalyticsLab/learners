@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SI Analytics | Python Foundations Interactive Cheat Sheet</title>
+<style>
+:root{
+  --navy:#0F172A;--teal:#0F766E;--gold:#FACC15;--off:#F8FAFC;--soft-teal:#ECFDF5;
+  --soft-gold:#FEF9C3;--slate:#64748B;--rose:#BE123C;--green:#15803D;--ink:#1E293B;--zoom:1
+}
+*{box-sizing:border-box}
+html{background:#E2E8F0;scroll-behavior:smooth}
+body{margin:0;background:#E2E8F0;color:var(--ink);font-family:Inter,Arial,Helvetica,sans-serif;line-height:1.34}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.toolbar{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 18px;background:var(--navy);color:#fff;box-shadow:0 8px 20px rgba(15,23,42,.22)}
+.toolbar .instruction{flex:1 1 420px;font-size:13px;color:#E2E8F0}
+.toolbar .actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.toolbar button{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:800}
+.toolbar button:hover,.toolbar button:focus-visible{background:rgba(255,255,255,.18)}
+.toolbar .primary{background:var(--teal);border-color:#5EEAD4}
+.zoom-readout,.progress-readout{font-size:12px;color:#F8FAFC;border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.06);white-space:nowrap}
+.progress-shell{width:110px;height:7px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--gold);transition:width .2s ease}
+.sheet-stage{overflow:auto;padding:22px 0 48px}
+.sheet-wrap{transform:scale(var(--zoom));transform-origin:top center;width:calc(100% / var(--zoom))}
+.page{position:relative;width:min(210mm,calc(100vw - 24px));min-height:297mm;margin:0 auto 20px;padding:12mm 12mm 16mm;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.16);overflow:hidden}
+.page::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--navy) 0 58%,var(--teal) 58% 88%,var(--gold) 88%)}
+.page-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:8px}
+.brand{display:flex;align-items:center;gap:9px;min-width:142px}
+.brand img{width:112px;max-height:42px;object-fit:contain}
+.brand-fallback{display:none;font-size:13px;letter-spacing:.14em;color:var(--navy);font-weight:900}
+.page-kicker{font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:var(--teal);margin-bottom:3px}
+h1{margin:0 0 4px;color:var(--navy);font-size:20px;line-height:1.1;letter-spacing:-.03em}
+.subtitle{margin:0;color:var(--slate);font-size:11px}
+.page-number{font-size:9px;color:var(--slate);white-space:nowrap;margin-top:3px}
+.intro-strip{display:grid;grid-template-columns:1.45fr 1fr;gap:8px;padding:8px 9px;border:1px solid #99F6E4;background:linear-gradient(90deg,var(--soft-teal),#fff);border-radius:10px;margin:7px 0 9px;font-size:9.2px}
+.intro-strip strong{color:var(--navy)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stack{display:grid;gap:7px}
+.card{break-inside:avoid;border:1px solid #D8E0E8;border-radius:10px;padding:8px;background:#fff}
+.card.soft{background:#F8FAFC}.card.teal{background:var(--soft-teal);border-color:#A7F3D0}.card.gold{background:#FFFBEB;border-color:#FDE68A}
+.card-title{display:flex;gap:7px;align-items:center;margin:0 0 5px;color:var(--navy);font-size:10.2px;text-transform:uppercase;letter-spacing:.07em;font-weight:900}
+.badge{display:inline-grid;place-items:center;width:18px;height:18px;flex:0 0 18px;border-radius:50%;background:var(--teal);color:#fff;font-size:9px}
+p{font-size:9.4px;margin:4px 0}.mini{font-size:8.5px;color:var(--slate);margin:3px 0}
+pre{white-space:pre-wrap;margin:5px 0;padding:6px 7px;border-radius:7px;background:#0B1220;color:#E2E8F0;font:8.05px/1.4 "SFMono-Regular",Consolas,monospace;border-left:3px solid var(--teal)}
+code{font-family:"SFMono-Regular",Consolas,monospace;color:#0F766E;font-size:.96em}
+.question{margin-top:5px;padding-top:5px;border-top:1px dashed #CBD5E1}
+.question:first-of-type{border-top:0;padding-top:0}
+.prompt{display:block;margin-bottom:4px;color:#334155;font-size:9.2px;font-weight:700}
+input.response,textarea.response,select.response{width:100%;border:1px solid #AAB8C7;border-radius:6px;padding:5px 6px;background:#fff;color:var(--navy);font-size:9px;outline:none}
+textarea.response{resize:vertical;min-height:39px;font-family:"SFMono-Regular",Consolas,monospace;line-height:1.3}
+input.response:focus,textarea.response:focus,select.response:focus,button:focus-visible{outline:3px solid rgba(250,204,21,.55);outline-offset:1px}
+.response.correct{border-color:var(--green);background:#F0FDF4}.response.incorrect{border-color:var(--rose);background:#FFF1F2}
+.flash{animation:correctFlash .55s ease}
+@keyframes correctFlash{0%{box-shadow:0 0 0 0 rgba(21,128,61,.5)}100%{box-shadow:0 0 0 6px rgba(21,128,61,0)}}
+.hint{display:block;margin-top:3px;color:var(--slate);font-size:8.2px}.hint.hidden{display:none}
+.feedback{display:none;margin-top:4px;font-size:8.4px;line-height:1.25}.feedback.show{display:block}.feedback.good{color:var(--green)}.feedback.bad{color:var(--rose)}
+.choice-group{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.choice-group button{border:1px solid #CBD5E1;color:#334155;background:#fff;border-radius:999px;padding:4px 7px;font-size:8.6px;font-weight:800}
+.choice-group button:hover{border-color:var(--teal)}.choice-group button.selected{border-color:var(--navy);background:#E2E8F0}.choice-group button.correct-choice{border-color:var(--green);background:#DCFCE7;color:#166534}.choice-group button.wrong-choice{border-color:var(--rose);background:#FFE4E6;color:#9F1239}
+table{width:100%;border-collapse:collapse;font-size:8.45px}th,td{border:1px solid #D8E0E8;padding:4px 5px;text-align:left;vertical-align:top}th{background:#F1F5F9;color:var(--navy)}
+.callout{margin-top:5px;padding:5px 7px;border-left:3px solid var(--gold);background:var(--soft-gold);font-size:8.4px}
+.footer{position:absolute;left:12mm;right:12mm;bottom:5mm;padding-top:4px;border-top:1px solid #CBD5E1;color:var(--slate);font-size:8px;text-align:center;letter-spacing:.03em}
+@media(max-width:760px){.page{width:calc(100vw - 12px);padding:10mm 8mm 15mm}.grid-2,.grid-3,.intro-strip{grid-template-columns:1fr}.footer{left:8mm;right:8mm}h1{font-size:18px}}
+@page{size:A4 portrait;margin:0}
+@media print{
+  html,body{background:#fff}.toolbar{display:none!important}.sheet-stage{padding:0;overflow:visible}.sheet-wrap{transform:none!important;width:100%!important}
+  .page{width:210mm;height:297mm;min-height:297mm;margin:0;padding:9mm 10mm 14mm;box-shadow:none;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto;break-after:auto}.footer{left:10mm;right:10mm;bottom:4mm}
+  .page-header{margin-bottom:5px}.intro-strip{margin:5px 0 6px;padding:5px 7px}.grid-2,.stack{gap:5px}
+  .card{padding:5px 6px;border-radius:7px}.card-title{font-size:8.7px;margin-bottom:3px}.badge{width:15px;height:15px;flex-basis:15px;font-size:7px}
+  h1{font-size:17px}p,.prompt{font-size:7.8px}.mini,.hint,.feedback,.choice-group button,.callout,table{font-size:7px}
+  pre{font-size:6.7px;padding:4px 5px;margin:3px 0}input.response,textarea.response,select.response{font-size:7.4px;padding:3px 4px}textarea.response{min-height:28px}.question{margin-top:3px;padding-top:3px}
+}
+</style>
+</head>
+<body>
+<aside class="toolbar" aria-label="Cheat sheet controls">
+  <div class="instruction">Complete the activities, check your understanding, and save your completed sheet as a PDF.</div>
+  <div class="actions">
+    <button type="button" id="zoomOut" aria-label="Zoom out">−</button>
+    <span class="zoom-readout" id="zoomReadout">100%</span>
+    <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+    <button type="button" id="toggleHints">Hide hints</button>
+    <button type="button" id="clearAnswers">Clear answers</button>
+    <button type="button" class="primary" id="printSheet">Print or Save PDF</button>
+    <span class="progress-readout" id="progressReadout">0 of 44 completed</span>
+    <span class="progress-shell"><span class="progress-bar" id="progressBar"></span></span>
+  </div>
+</aside>
+
+<main class="sheet-stage"><div class="sheet-wrap">
+
+<section class="page" aria-labelledby="p1">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python foundations</div><h1 id="p1">Functions, Methods, and Arguments</h1><p class="subtitle">Calling reusable code blocks and working confidently with parameters</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 01 / 04</div></div>
+</header>
+
+<div class="intro-strip"><div><strong>Purpose.</strong> Distinguish functions from methods, identify arguments, and apply positional and keyword arguments correctly.</div><div><strong>Core idea.</strong> Functions are called directly. Methods belong to objects and are called with dot notation.</div></div>
+
+<div class="grid-2">
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Functions</h2>
+<pre>len("Python")        # 6
+round(3.1415, 2)     # 3.14
+abs(-5)              # 5</pre>
+<div class="question"><span class="prompt">1. “A function is a reusable block of code that performs a task.”</span><div class="choice-group" data-item="q1" data-answer="correct" data-explain="Functions can receive inputs and return outputs."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q2">2. Which function returns the length of a string?</label><input class="response" id="q2" data-item="q2" data-answer="len()" data-alt="len" data-hint-options="len()|round()|abs()|pow()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q3">3. Use <code>abs()</code> to obtain the absolute value of -5.</label><input class="response" id="q3" data-item="q3" data-mode="code" data-answer="abs(-5)" data-hint-options="abs(-5)|round(-5)|len(-5)|pow(-5)"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Arguments and parameters</h2>
+<pre>round(3.1415, 2)
+
+round(
+  number=3.1415,
+  ndigits=2
+)</pre>
+<div class="question"><span class="prompt">4. “Arguments are values passed into a function or method.”</span><div class="choice-group" data-item="q4" data-answer="correct" data-explain="They provide the inputs needed by the function or method."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">5. Which approach passes arguments according to their order?</span><div class="choice-group" data-item="q5" data-answer="positional"><button type="button" data-choice="positional">Positional arguments</button><button type="button" data-choice="keyword">Keyword arguments</button><button type="button" data-choice="library">Library arguments</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">6. Which approach explicitly names each argument?</span><div class="choice-group" data-item="q6" data-answer="keyword"><button type="button" data-choice="positional">Positional arguments</button><button type="button" data-choice="keyword">Keyword arguments</button><button type="button" data-choice="method">Method chaining</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q7">7. Use positional arguments with <code>pow()</code> to calculate 2 raised to 7.</label><input class="response" id="q7" data-item="q7" data-mode="code" data-answer="pow(2, 7)" data-alt="pow(2,7)" data-hint-options="pow(2, 7)|pow(7, 2)|2.pow(7)|round(2, 7)"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q8">8. Round 9.87652 to 3 decimal places using keyword arguments.</label><input class="response" id="q8" data-item="q8" data-mode="code" data-answer="round(number=9.87652, ndigits=3)" data-alt="round(ndigits=3,number=9.87652)||round(number = 9.87652, ndigits = 3)"><span class="hint">Hint options: name both <code>number</code> and <code>ndigits</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Methods and dot notation</h2>
+<pre>name = "python"
+
+name.upper()
+name.lower()
+name.replace("p", "P")
+
+"Hello World".split()</pre>
+<div class="question"><span class="prompt">9. “A method is a function associated with a specific object.”</span><div class="choice-group" data-item="q9" data-answer="correct" data-explain="Methods are called with dot notation on an object."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q10">10. Which syntax demonstrates dot notation?</label><input class="response" id="q10" data-item="q10" data-answer="object.method()" data-alt="name.upper()||object.method" data-hint-options="object.method()|function(object)|import object|object = method"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q11">11. Fix the spelling of <code>"Helo"</code> with <code>replace()</code>.</label><input class="response" id="q11" data-item="q11" data-mode="code" data-answer='"Helo".replace("l", "ll")' data-alt="'Helo'.replace('l','ll')" data-hint-options='"Helo".replace("l", "ll")|"Helo".upper()|"Helo".split()|replace("Helo")'><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q12">12. Split <code>"Hello World"</code> into a list of words.</label><input class="response" id="q12" data-item="q12" data-mode="code" data-answer='"Hello World".split()' data-alt="'Hello World'.split()" data-hint-options='"Hello World".split()|"Hello World".replace()|split("Hello World")|"Hello World".upper()'><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+</div>
+
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Definitions check</h2>
+<table>
+<tr><th>Term</th><th>Working definition</th></tr>
+<tr><td>Function</td><td>Reusable code block called directly</td></tr>
+<tr><td>Method</td><td>Function associated with an object</td></tr>
+<tr><td>Argument</td><td>Value passed into a function or method</td></tr>
+<tr><td>Dot notation</td><td>Calling an object's method with <code>.</code></td></tr>
+</table>
+<div class="question"><span class="prompt">13. Which statement is correct?</span><div class="choice-group" data-item="q13" data-answer="method"><button type="button" data-choice="method"><code>upper()</code> is a string method</button><button type="button" data-choice="function"><code>len()</code> is called with dot notation</button><button type="button" data-choice="argument">Arguments cannot be named</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> Numeric methods</h2>
+<pre>example_decimal = 1.5
+example_decimal.as_integer_ratio()
+# (3, 2)</pre>
+<div class="question"><span class="prompt">14. “<code>as_integer_ratio()</code> converts a decimal number into an integer ratio.”</span><div class="choice-group" data-item="q14" data-answer="correct" data-explain="For 1.5, the ratio is (3, 2)."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">F</span> Page 1 rapid reference</h2>
+<table>
+<tr><th>Need</th><th>Example</th></tr>
+<tr><td>Call a function</td><td><code>len("Python")</code></td></tr>
+<tr><td>Use positional arguments</td><td><code>round(3.1415, 2)</code></td></tr>
+<tr><td>Use keyword arguments</td><td><code>round(number=3.1415, ndigits=2)</code></td></tr>
+<tr><td>Call a method</td><td><code>"python".upper()</code></td></tr>
+</table>
+</article>
+
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p2">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python foundations</div><h1 id="p2">Libraries, Imports, and Installation</h1><p class="subtitle">Extending Python with reusable modules and packages</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 02 / 04</div></div>
+</header>
+
+<div class="intro-strip"><div><strong>Purpose.</strong> Import built-in libraries, use aliases, install external packages, and call functions from imported modules.</div><div><strong>Core practice.</strong> Place imports near the top of your script or notebook.</div></div>
+
+<div class="grid-2">
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Import a library</h2>
+<pre>import math
+
+math.sqrt(16)
+# 4.0</pre>
+<div class="question"><span class="prompt">15. “A library is a collection of pre-written code that extends Python.”</span><div class="choice-group" data-item="q15" data-answer="correct" data-explain="Libraries provide additional tools, functions, and data structures."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q16">16. Which statement imports the <code>math</code> library?</label><input class="response" id="q16" data-item="q16" data-mode="code" data-answer="import math" data-hint-options="import math|install math|math import|library(math)"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q17">17. Use the imported library to calculate the square root of 16.</label><input class="response" id="q17" data-item="q17" data-mode="code" data-answer="math.sqrt(16)" data-hint-options="math.sqrt(16)|sqrt.math(16)|sqrt(16)|math(16)"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Aliases and selective imports</h2>
+<pre>import math as m
+m.sqrt(16)
+
+from math import sqrt, sin
+sqrt(16)
+sin(0)</pre>
+<div class="question"><label class="prompt" for="q18">18. What is an alias?</label><input class="response" id="q18" data-item="q18" data-answer="shortened name" data-alt="alternative name||nickname||abbreviation" data-hint-options="shortened name|function input|package installer|data structure"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">19. “<code>import math as m</code> allows <code>m.sqrt(16)</code>.”</span><div class="choice-group" data-item="q19" data-answer="correct" data-explain="The alias replaces the longer library name in later calls."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q20">20. Import only <code>sqrt</code> and <code>sin</code> from <code>math</code>.</label><input class="response" id="q20" data-item="q20" data-mode="code" data-answer="from math import sqrt, sin" data-alt="from math import sin, sqrt" data-hint-options="from math import sqrt, sin|import math as sqrt|math import sqrt|import sqrt, sin"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Use random.randint()</h2>
+<pre>import random
+
+random.randint(1, 10)</pre>
+<div class="question"><label class="prompt" for="q21">21. Import <code>random</code> and generate an integer from 1 to 10.</label><textarea class="response" id="q21" data-item="q21" data-mode="code" data-answer="import random random.randint(1, 10)" data-alt="import random random.randint(1,10)"></textarea><span class="hint">Hint options: import the library first, then use dot notation.</span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">22. “<code>randint(1, 10)</code> can generate either endpoint.”</span><div class="choice-group" data-item="q22" data-answer="correct" data-explain="random.randint(a, b) includes both a and b."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+</article>
+
+</div>
+
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Install external libraries</h2>
+<pre># Google Colab or notebook cell
+!pip install cowsay
+
+import cowsay
+cowsay.cow("Moo!")</pre>
+<div class="question"><label class="prompt" for="q23">23. Which tool installs Python packages from PyPI?</label><input class="response" id="q23" data-item="q23" data-answer="pip" data-alt="pip install" data-hint-options="pip|import|alias|len"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><span class="prompt">24. “PyPI is a repository from which Python packages can be installed.”</span><div class="choice-group" data-item="q24" data-answer="correct" data-explain="pip installs packages published to PyPI."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q25">25. Write the Colab command to install <code>emoji</code>.</label><input class="response" id="q25" data-item="q25" data-mode="code" data-answer="!pip install emoji" data-alt="pip install emoji" data-hint-options="!pip install emoji|import emoji|install(emoji)|emoji.install()"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> Use an installed package</h2>
+<pre>!pip install emoji
+import emoji
+
+emoji.emojize(":thumbs_up:")</pre>
+<div class="question"><label class="prompt" for="q26">26. Import <code>emoji</code> and display a thumbs-up emoji.</label><textarea class="response" id="q26" data-item="q26" data-mode="code" data-answer='import emoji emoji.emojize(":thumbs_up:")' data-alt="import emoji emoji.emojize(':thumbs_up:')"></textarea><span class="hint">Hint options: import the package, then call <code>emoji.emojize()</code>.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">F</span> Page 2 rapid reference</h2>
+<table>
+<tr><th>Need</th><th>Pattern</th></tr>
+<tr><td>Import a library</td><td><code>import math</code></td></tr>
+<tr><td>Use an alias</td><td><code>import math as m</code></td></tr>
+<tr><td>Import selected functions</td><td><code>from math import sqrt</code></td></tr>
+<tr><td>Install a package</td><td><code>!pip install emoji</code></td></tr>
+</table>
+</article>
+
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p3">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python foundations</div><h1 id="p3">Data Structures: Lists, Dictionaries, and Series</h1><p class="subtitle">Building blocks for organized data in Python</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 03 / 04</div></div>
+</header>
+
+<div class="intro-strip"><div><strong>Purpose.</strong> Create and modify lists and dictionaries, then use pandas Series for simple analytical operations.</div><div><strong>Core progression.</strong> List → dictionary → Series → DataFrame</div></div>
+
+<div class="grid-2">
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Python lists</h2>
+<pre>shopping = ["apples", "bananas", "milk"]
+
+shopping[0]          # "apples"
+shopping[1] = "oranges"
+shopping.append("eggs")</pre>
+<div class="question"><span class="prompt">27. “Python lists use zero-based indexing.”</span><div class="choice-group" data-item="q27" data-answer="correct" data-explain="The first list item is accessed with index 0."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q28">28. Which expression returns the first list element?</label><input class="response" id="q28" data-item="q28" data-answer="list[0]" data-alt="shopping[0]||temps[0]" data-hint-options="list[0]|list[1]|list.first()|list[-0]"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q29">29. Create <code>temps = [1, 2, 3, 4]</code>, print the first element, and change the last element to 6.</label><textarea class="response" id="q29" data-item="q29" data-mode="code" data-answer="temps = [1, 2, 3, 4] print(temps[0]) temps[-1] = 6" data-alt="temps=[1,2,3,4] print(temps[0]) temps[3]=6"></textarea><span class="hint">Hint options: use index 0 for the first item and index -1 or 3 for the last item.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q30">30. Which method adds an item to the end of a list?</label><input class="response" id="q30" data-item="q30" data-answer="append()" data-alt=".append()||append" data-hint-options="append()|add()|insert_end()|extend_one()"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Dictionaries</h2>
+<pre>grades = {
+  "Alice": 90,
+  "Bob": 85,
+  "Charlie": 92
+}
+
+grades["Bob"]          # 85
+grades["David"] = 88   # add
+grades["Alice"] = 95   # modify</pre>
+<div class="question"><span class="prompt">31. “Dictionaries store key-value pairs.”</span><div class="choice-group" data-item="q31" data-answer="correct" data-explain="Each key identifies its associated value."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><span class="prompt">32. Which brackets define a dictionary literal?</span><div class="choice-group" data-item="q32" data-answer="curly"><button type="button" data-choice="square">[ ]</button><button type="button" data-choice="curly">{ }</button><button type="button" data-choice="round">( )</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q33">33. Create <code>prices</code>, print the orange price, add grape, and update banana.</label><textarea class="response" id="q33" data-item="q33" data-mode="code" data-answer='prices = {"apple": 0.50, "banana": 0.25, "orange": 0.75} print(prices["orange"]) prices["grape"] = 1.5 prices["banana"] = 0.30' data-alt="prices={'apple':0.50,'banana':0.25,'orange':0.75} print(prices['orange']) prices['grape']=1.5 prices['banana']=0.30"></textarea><span class="hint">Hint options: use keys inside square brackets to access or update values.</span><span class="feedback"></span></div>
+</article>
+
+</div>
+
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">C</span> pandas Series</h2>
+<pre>import pandas as pd
+
+temps = pd.Series([1, 2, 3, 4, 5])
+
+temps.mean()
+temps.median()
+temps.std()</pre>
+<div class="question"><span class="prompt">34. “A pandas Series is a one-dimensional labeled data structure.”</span><div class="choice-group" data-item="q34" data-answer="correct" data-explain="A Series is similar to a list but includes an index and analytical methods."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q35">35. Create a Series called <code>rain</code> with values 5, 4, 3, and 2.</label><input class="response" id="q35" data-item="q35" data-mode="code" data-answer="rain = pd.Series([5, 4, 3, 2])" data-alt="rain=pd.Series([5,4,3,2])"><span class="hint">Hint options: pass a list into <code>pd.Series()</code>.</span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q36">36. Calculate mean and median rainfall.</label><textarea class="response" id="q36" data-item="q36" data-mode="code" data-answer="rain.mean() rain.median()" data-alt="print(rain.mean()) print(rain.median())"></textarea><span class="hint">Hint options: call <code>mean()</code> and <code>median()</code> on the Series.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">D</span> Custom Series index</h2>
+<pre>temps_labeled = pd.Series(
+  [1, 2, 3, 4],
+  index=["Mon", "Tue", "Wed", "Thu"]
+)
+
+temps_labeled["Wed"]  # 3</pre>
+<div class="question"><span class="prompt">37. “A Series can use custom labels instead of default numeric indexes.”</span><div class="choice-group" data-item="q37" data-answer="correct" data-explain="Custom indexes can improve readability and intuitive access."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q38">38. Which expression returns Wednesday's value?</label><input class="response" id="q38" data-item="q38" data-mode="code" data-answer='temps_labeled["Wed"]' data-alt="temps_labeled['Wed']"><span class="hint">Hint options: access the Series using the custom label.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">E</span> Page 3 rapid reference</h2>
+<table>
+<tr><th>Structure</th><th>Defining feature</th></tr>
+<tr><td>List</td><td>Ordered collection accessed by position</td></tr>
+<tr><td>Dictionary</td><td>Key-value collection accessed by key</td></tr>
+<tr><td>Series</td><td>One-dimensional labeled pandas structure</td></tr>
+</table>
+</article>
+
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+<section class="page" aria-labelledby="p4">
+<header class="page-header">
+  <div><div class="page-kicker">SI Analytics • Python foundations</div><h1 id="p4">Data Structures: pandas DataFrames</h1><p class="subtitle">Creating, inspecting, and analyzing structured tabular data</p></div>
+  <div><div class="brand"><img src="https://raw.githubusercontent.com/SIAnalyticsLab/si-analytics-academy/main/assets/logo.png" alt="SI Analytics logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback">SI ANALYTICS</span></div><div class="page-number">PAGE 04 / 04</div></div>
+</header>
+
+<div class="intro-strip"><div><strong>Purpose.</strong> Create pandas DataFrames from dictionaries, select columns and rows, and inspect structured data.</div><div><strong>Core idea.</strong> A DataFrame is the primary tabular structure for data analysis in Python.</div></div>
+
+<div class="grid-2">
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">A</span> Create a DataFrame</h2>
+<pre>people_df = pd.DataFrame({
+  "name": ["Alice", "Bob", "Charlie"],
+  "age": [25, 30, 28],
+  "city": ["Lagos", "London", "Lima"]
+})</pre>
+<div class="question"><span class="prompt">39. “A DataFrame is a two-dimensional tabular structure with rows and columns.”</span><div class="choice-group" data-item="q39" data-answer="correct" data-explain="It is similar to a spreadsheet or database table."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q40">40. Which constructor creates a DataFrame?</label><input class="response" id="q40" data-item="q40" data-answer="pd.DataFrame()" data-alt="DataFrame()||pd.DataFrame" data-hint-options="pd.DataFrame()|pd.Series()|dict()|list()"><span class="hint"></span><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q41">41. Create a <code>students</code> DataFrame with Name, Age, and Grade for Alice, Bob, and Charlie.</label><textarea class="response" id="q41" data-item="q41" data-mode="code" data-answer='students = pd.DataFrame({"Name": ["Alice", "Bob", "Charlie"], "Age": [20, 21, 22], "Grade": [90, 85, 70]})' data-alt='students=pd.DataFrame({"Name":["Alice","Bob","Charlie"],"Age":[20,21,22],"Grade":[90,85,70]})'></textarea><span class="hint">Hint options: use a dictionary whose keys become column names. Any reasonable ages are acceptable.</span><span class="feedback"></span></div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">B</span> Select rows and columns</h2>
+<pre>people_df["city"]  # column Series
+people_df.loc[0]   # row Series</pre>
+<div class="question"><span class="prompt">42. “Selecting <code>people_df["city"]</code> returns a Series.”</span><div class="choice-group" data-item="q42" data-answer="correct" data-explain="A single DataFrame column is represented as a Series."><button type="button" data-choice="correct">Correct</button><button type="button" data-choice="misconception">Misconception</button></div><span class="feedback"></span></div>
+<div class="question"><label class="prompt" for="q43">43. Which accessor selects a row by label?</label><input class="response" id="q43" data-item="q43" data-answer="loc[]" data-alt=".loc[]||loc" data-hint-options="loc[]|iloc[]|shape[]|index()"><span class="hint"></span><span class="feedback"></span></div>
+</article>
+
+<article class="card">
+<h2 class="card-title"><span class="badge">C</span> Inspect and summarize</h2>
+<pre>people_df.describe()
+people_df.info()
+
+people_df["age"].mean()
+people_df["city"].describe()</pre>
+<div class="question"><span class="prompt">44. Which sequence best checks a DataFrame's numeric summary and data types?</span><div class="choice-group" data-item="q44" data-answer="inspect"><button type="button" data-choice="inspect"><code>describe()</code> and <code>info()</code></button><button type="button" data-choice="list"><code>append()</code> and <code>split()</code></button><button type="button" data-choice="math"><code>sqrt()</code> and <code>pow()</code></button></div><span class="feedback"></span></div>
+</article>
+
+</div>
+
+<div class="stack">
+
+<article class="card teal">
+<h2 class="card-title"><span class="badge">D</span> Practice workflow</h2>
+<pre>students["Grade"]
+students["Age"].mean()
+students.loc[1]</pre>
+<div class="callout"><strong>Apply it:</strong> after creating <code>students</code>, show the Grade column, calculate average age, and display Bob's row. Bob is at label <code>1</code> in the example ordering.</div>
+</article>
+
+<article class="card gold">
+<h2 class="card-title"><span class="badge">E</span> Structure comparison</h2>
+<table>
+<tr><th>Structure</th><th>Dimension</th><th>Typical use</th></tr>
+<tr><td>List</td><td>1D</td><td>Ordered general-purpose values</td></tr>
+<tr><td>Dictionary</td><td>Key-value</td><td>Labeled lookup</td></tr>
+<tr><td>Series</td><td>1D</td><td>Labeled analytical vector</td></tr>
+<tr><td>DataFrame</td><td>2D</td><td>Structured tabular analysis</td></tr>
+</table>
+</article>
+
+<article class="card soft">
+<h2 class="card-title"><span class="badge">F</span> Final readiness check</h2>
+<table>
+<tr><th>Question</th><th>Ask yourself</th></tr>
+<tr><td>Functions and methods</td><td>Am I calling reusable code directly or through an object?</td></tr>
+<tr><td>Libraries</td><td>Did I import or install the required package?</td></tr>
+<tr><td>Lists and dictionaries</td><td>Should I access a position or a key?</td></tr>
+<tr><td>Series and DataFrames</td><td>Do I need a one-dimensional vector or a two-dimensional table?</td></tr>
+</table>
+<div class="callout"><strong>Workshop readiness:</strong> revisit any rose-coloured response, then print or save your completed sheet as a PDF.</div>
+</article>
+
+</div>
+</div>
+<footer class="footer">SI Analytics | Learn. Apply. Transform. | www.sianalytics.org</footer>
+</section>
+
+</div></main>
+<script>
+(()=>{const K="siAnalyticsPythonFoundationsV1",S="siAnalyticsPythonFoundationsSettingsV1",R=[...document.querySelectorAll('.response')],G=[...document.querySelectorAll('.choice-group')],H=[...document.querySelectorAll('.hint')],I=[...R.filter(x=>x.dataset.item),...G.filter(x=>x.dataset.item)];let z=1,h=true;const n=(v,m='')=>{let x=(v||'').trim().toLowerCase().replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/\r/g,'');return m==='code'?x.replace(/\s+/g,'').replace(/;/g,''):x.replace(/\s+/g,' ')},a=e=>[e.dataset.answer||'',...(e.dataset.alt?e.dataset.alt.split('||'):[])].map(x=>n(x,e.dataset.mode)),f=(e,o,t='')=>{const q=e.parentElement.querySelector('.feedback')||e.nextElementSibling?.nextElementSibling;if(e.classList.contains('response')){e.classList.toggle('correct',o);e.classList.toggle('incorrect',!o);if(o){e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash')}}if(q){q.className=`feedback show ${o?'good':'bad'}`;q.textContent=t||(o?'Correct.':'Review this item and try again.')}},v=e=>{if(!e.value.trim()){e.classList.remove('correct','incorrect');const q=e.parentElement.querySelector('.feedback');if(q){q.className='feedback';q.textContent=''}return false}const o=a(e).includes(n(e.value,e.dataset.mode));f(e,o);return o},p=()=>{const d=I.filter(x=>x.classList.contains('response')?!!x.value.trim():!!x.dataset.selected).length,c=Math.round(d/I.length*100);document.getElementById('progressReadout').textContent=`${d} of ${I.length} completed • ${c}%`;document.getElementById('progressBar').style.width=`${c}%`},save=()=>{const s={};R.forEach(x=>s[x.id]=x.value);G.forEach((g,i)=>s[g.dataset.item||`g${i}`]=g.dataset.selected||'');localStorage.setItem(K,JSON.stringify(s));localStorage.setItem(S,JSON.stringify({zoom:z,hintsVisible:h}));p()},pick=(g,c)=>{g.dataset.selected=c;const o=c===g.dataset.answer;g.querySelectorAll('button').forEach(b=>{b.classList.remove('selected','correct-choice','wrong-choice');if(b.dataset.choice===c)b.classList.add('selected',o?'correct-choice':'wrong-choice')});const q=g.parentElement.querySelector('.feedback')||g.nextElementSibling;if(q){q.className=`feedback show ${o?'good':'bad'}`;q.textContent=o?'Correct.':(g.dataset.explain||'Review this concept and try again.')}save()},sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};R.forEach(e=>{const q=e.parentElement.querySelector('.hint')||e.nextElementSibling;if(q&&e.dataset.hintOptions)q.textContent=`Hint options: ${sh(e.dataset.hintOptions.split('|')).join('  •  ')}`;e.addEventListener('blur',()=>{v(e);save()});e.addEventListener('input',save);e.addEventListener('change',()=>{v(e);save()})});G.forEach(g=>g.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>pick(g,b.dataset.choice))));const az=()=>{document.documentElement.style.setProperty('--zoom',z);document.getElementById('zoomReadout').textContent=`${Math.round(z*100)}%`},ah=()=>{H.forEach(x=>x.classList.toggle('hidden',!h));document.getElementById('toggleHints').textContent=h?'Hide hints':'Show hints'};document.getElementById('zoomOut').onclick=()=>{z=Math.max(.7,+(z-.1).toFixed(1));az();save()};document.getElementById('zoomIn').onclick=()=>{z=Math.min(1.3,+(z+.1).toFixed(1));az();save()};document.getElementById('toggleHints').onclick=()=>{h=!h;ah();save()};document.getElementById('printSheet').onclick=()=>window.print();document.getElementById('clearAnswers').onclick=()=>{if(!confirm('Clear all saved responses from this browser?'))return;localStorage.removeItem(K);R.forEach(x=>{x.value='';x.classList.remove('correct','incorrect');const q=x.parentElement.querySelector('.feedback');if(q){q.className='feedback';q.textContent=''}});G.forEach(g=>{delete g.dataset.selected;g.querySelectorAll('button').forEach(b=>b.classList.remove('selected','correct-choice','wrong-choice'));const q=g.parentElement.querySelector('.feedback')||g.nextElementSibling;if(q){q.className='feedback';q.textContent=''}});p()};const restore=()=>{const s=JSON.parse(localStorage.getItem(K)||'{}');R.forEach(x=>{if(s[x.id]!==undefined){x.value=s[x.id];if(x.value.trim())v(x)}});G.forEach((g,i)=>{const k=g.dataset.item||`g${i}`;if(s[k])pick(g,s[k])});const t=JSON.parse(localStorage.getItem(S)||'{}');z=t.zoom||1;h=t.hintsVisible!==false;az();ah();p()};restore()})();
+</script>
+</body>
+</html>
